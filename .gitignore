@@ -1,0 +1,15 @@
+# PlatformIO (a compilação vai para C:/Users/filho/.rb/, mas por garantia)
+.pio/
+.pioenvs/
+.piolibdeps/
+
+# Editores / sistema
+.vscode/
+.idea/
+*.swp
+Thumbs.db
+Desktop.ini
+.DS_Store
+
+# Python
+__pycache__/
