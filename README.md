@@ -12,7 +12,7 @@ e feito com ela, para facilitar os próximos projetos.
 | `backup/jc3248w535_fabrica_16MB.bin` | Cópia completa (16 MB) da memória original de fábrica |
 | `site/` | **Gravador pelo navegador** (GitHub Pages): instala firmwares na placa sem IDE |
 | `.github/workflows/deploy-pages.yml` | Compila o firmware e publica o gravador no GitHub Pages |
-| `LEIA-ME.md` | Este arquivo |
+| `README.md` | Este arquivo |
 
 **Guarde uma cópia do backup em outro lugar também (pendrive, nuvem).**
 SHA-256 do backup: `0316E368593540D189F9F9C4F34947693771373931DA232F7B3DDF4FFDD12163`

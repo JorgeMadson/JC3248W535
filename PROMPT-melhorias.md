@@ -13,7 +13,7 @@ opções novas no futuro mexendo o mínimo possível no código existente.
 
 ## Contexto — leia antes de qualquer coisa
 
-1. `LEIA-ME.md`: tudo sobre a placa (pinos, chip, protocolo do toque, biblioteca
+1. `README.md`: tudo sobre a placa (pinos, chip, protocolo do toque, biblioteca
    que funciona, problemas já resolvidos, como restaurar o sistema de fábrica).
 2. `riftbound-contador/platformio.ini` e `riftbound-contador/src/main.cpp`: o
    protótipo atual, que **funciona** (tela e toque validados na placa). Use-o como
@@ -121,7 +121,7 @@ de pastas) e espere meu ok. Diretrizes:
    exatamente o que devo ver e testar (quais toques, o que deve acontecer) e espere
    minha confirmação antes de seguir. Deixe um modo de debug que desenhe um ponto
    onde o toque foi detectado e que possa ser ligado com uma constante.
-6. No final, atualize o `LEIA-ME.md` com a nova estrutura e um passo a passo
+6. No final, atualize o `README.md` com a nova estrutura e um passo a passo
    curto de "como adicionar um jogo novo".
 7. Se quiser, mantenha o protótipo antigo como referência, mas o projeto novo deve
    ficar numa pasta própria (ex.: `placar-mesa/`).
