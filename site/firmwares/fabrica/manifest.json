@@ -1,0 +1,14 @@
+{
+  "name": "JC3248W535 — Firmware de fábrica",
+  "version": "original",
+  "funding_url": "",
+  "new_install_prompt_erase": true,
+  "builds": [
+    {
+      "chipFamily": "ESP32-S3",
+      "parts": [
+        { "path": "jc3248w535_fabrica_16MB.bin", "offset": 0 }
+      ]
+    }
+  ]
+}

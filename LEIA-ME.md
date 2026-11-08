@@ -10,6 +10,8 @@ e feito com ela, para facilitar os próximos projetos.
 | `placar-mesa/` | **Projeto atual** (gravado na placa): placar de mesa com vários jogos (Riftbound, Magic) |
 | `riftbound-contador/` | Protótipo antigo do contador Riftbound (só referência) |
 | `backup/jc3248w535_fabrica_16MB.bin` | Cópia completa (16 MB) da memória original de fábrica |
+| `site/` | **Gravador pelo navegador** (GitHub Pages): instala firmwares na placa sem IDE |
+| `.github/workflows/deploy-pages.yml` | Compila o firmware e publica o gravador no GitHub Pages |
 | `LEIA-ME.md` | Este arquivo |
 
 **Guarde uma cópia do backup em outro lugar também (pendrive, nuvem).**
@@ -179,3 +181,65 @@ Coordenadas: cada jogador desenha e testa toques em coordenadas **locais** (a me
 - Vitória com **8 pontos** (painel dourado, "VENCEU!"). Tempo da rodada: **50 min**
   (palpite; mude `TEMPO_RODADA_S` em `src/main.cpp`). Depois de zerar, conta o acréscimo.
 - `DEBUG_TOQUE 1` em `src/main.cpp` mostra uma bolinha onde a placa sentiu o toque.
+
+## Gravador pelo navegador (`site/` + GitHub Pages)
+
+Site estático que grava firmwares na placa **pelo navegador** (Chrome/Edge/Opera no
+computador), sem IDE, driver ou linha de comando. Mesma ideia do `bruce.computer/flasher`:
+usa a **Web Serial API** + a biblioteca **esp-web-tools** (Apache-2.0), que está
+**embutida no repositório** (`site/vendor/esp-web-tools/`, versão 10.4.0) — nada de CDN.
+
+Dois firmwares são oferecidos:
+- **Placar de Mesa (TCG)** — o nosso sistema, com preview da interface, explicação e
+  prints (menu, Riftbound e Magic).
+- **Firmware de fábrica** — a cópia de 16 MB do `backup/`, para voltar ao original.
+
+### Camadas de segurança (de propósito, nada é pulado)
+- Só grava em **contexto seguro**: HTTPS (GitHub Pages) ou `localhost`.
+- O navegador **pede permissão** da porta serial; nada roda sem o usuário autorizar.
+- A biblioteca de gravação é aberta e local; o firmware de fábrica permite reverter.
+
+### Como publicar no GitHub Pages
+1. Suba este repositório para o GitHub (branch `main`).
+2. Em **Settings → Pages**, em *Build and deployment*, escolha **Source: GitHub Actions**.
+3. O workflow `deploy-pages.yml` roda sozinho: compila o placar-mesa com PlatformIO,
+   junta os binários + a cópia de fábrica e publica. O endereço final aparece em
+   **Settings → Pages** (algo como `https://<usuario>.github.io/<repo>/`).
+   - Dá para rodar na mão em **Actions → "Build firmware..." → Run workflow**.
+
+> Observação: o firmware do placar-mesa é **compilado na CI** (os runners do GitHub têm
+> internet para baixar o toolchain do ESP32). O `platformio.ini` aponta o build para um
+> caminho do Windows; no Linux da CI isso é contornado com `PLATFORMIO_BUILD_DIR` e a
+> busca dos `.bin` por `find`, sem alterar a ini.
+
+### Testar no seu PC antes de publicar
+`localhost` também é contexto seguro, então dá para gravar de verdade sem publicar:
+
+```
+python site/servir_local.py
+```
+
+Abra `http://localhost:8000`, conecte a placa e teste (o card de fábrica já funciona).
+Para testar também o placar-mesa, compile-o e aponte a pasta de build:
+
+```
+python -m platformio run                                  # dentro de placar-mesa/
+python site/servir_local.py --placar-build "C:/Users/filho/.rb/pm-build/jc3248w535"
+```
+
+### Como são servidos os binários (ESP Web Tools)
+Cada firmware tem uma pasta em `site/firmwares/` com um `manifest.json`:
+- **fábrica**: uma única parte no offset `0x0` (imagem de 16 MB).
+- **placar-mesa**: `bootloader.bin` (0x0), `partitions.bin` (0x8000),
+  `boot_app0.bin` (0xe000) e `firmware.bin` (0x10000).
+Os `.bin` **não ficam no git** — a CI (ou o `servir_local.py`) os coloca na publicação.
+
+### Adicionar um firmware novo ao gravador (ex.: sensor de temperatura/clima)
+1. Crie `site/firmwares/<seu-projeto>/manifest.json` (copie um existente; `chipFamily`
+   continua `ESP32-S3`).
+2. Faça a CI gerar os `.bin` desse projeto e copiá-los para essa pasta (adapte o
+   `deploy-pages.yml`), **ou** coloque binários prontos lá.
+3. Adicione um card no `site/index.html` com `<esp-web-install-button manifest="...">`.
+
+> Projeto futuro já planejado: medir **temperatura/clima dentro e fora de casa** para
+> saber a hora de abrir as janelas — entra aqui como mais um card/firmware.

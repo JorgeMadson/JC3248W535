@@ -1,0 +1,106 @@
+name: Build firmware e publicar o gravador (GitHub Pages)
+
+# Compila o firmware do placar-mesa com PlatformIO, monta o site do gravador
+# (com os binários + a cópia de fábrica) e publica no GitHub Pages.
+
+on:
+  push:
+    branches: [main, master]
+    paths:
+      - "site/**"
+      - "placar-mesa/**"
+      - "backup/**"
+      - ".github/workflows/deploy-pages.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Instalar PlatformIO
+        run: |
+          python -m pip install --upgrade pip
+          pip install platformio
+
+      - name: Compilar firmware do placar-mesa
+        env:
+          # A ini do projeto aponta o build para um caminho do Windows
+          # (limite de 260 caracteres). No runner Linux, sobrescrevemos:
+          PLATFORMIO_BUILD_DIR: ${{ github.workspace }}/.pio-build
+          PLATFORMIO_LIBDEPS_DIR: ${{ github.workspace }}/.pio-libdeps
+        run: |
+          cd placar-mesa
+          pio run -e jc3248w535
+
+      - name: Montar o site (_site) com os binários
+        run: |
+          set -e
+          DEST=_site
+          FW="$DEST/firmwares/placar-mesa"
+
+          # Localiza as saídas de build do ambiente jc3248w535 (robusto a
+          # qualquer build_dir: a ini do projeto usa um caminho do Windows).
+          findbin() {
+            find "$GITHUB_WORKSPACE" -type f -path "*jc3248w535*/$1" 2>/dev/null | head -1
+          }
+          BOOTLOADER=$(findbin bootloader.bin)
+          PARTITIONS=$(findbin partitions.bin)
+          FIRMWARE=$(findbin firmware.bin)
+          BOOT_APP0=$(find "$HOME/.platformio" -name boot_app0.bin 2>/dev/null | head -1)
+
+          echo "bootloader : $BOOTLOADER"
+          echo "partitions : $PARTITIONS"
+          echo "firmware   : $FIRMWARE"
+          echo "boot_app0  : $BOOT_APP0"
+          for f in "$BOOTLOADER" "$PARTITIONS" "$FIRMWARE" "$BOOT_APP0"; do
+            if [ -z "$f" ] || [ ! -f "$f" ]; then
+              echo "ERRO: binário não encontrado — build falhou?"; exit 1
+            fi
+          done
+
+          # 1) site estático
+          cp -r site "$DEST"
+          rm -f "$DEST/servir_local.py"   # helper só de teste local
+          touch "$DEST/.nojekyll"
+          # 2) firmware do placar-mesa (partes nos offsets do manifest)
+          cp "$BOOTLOADER" "$FW/bootloader.bin"
+          cp "$PARTITIONS" "$FW/partitions.bin"
+          cp "$FIRMWARE"   "$FW/firmware.bin"
+          cp "$BOOT_APP0"  "$FW/boot_app0.bin"
+          # 3) cópia de fábrica
+          cp backup/jc3248w535_fabrica_16MB.bin "$DEST/firmwares/fabrica/jc3248w535_fabrica_16MB.bin"
+
+          echo "== conteúdo publicado =="
+          find "$DEST" -maxdepth 3 -type f | sort
+          echo "== binários do placar =="
+          ls -la "$FW"/*.bin
+
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deploy.outputs.page_url }}
+    steps:
+      - id: deploy
+        uses: actions/deploy-pages@v4

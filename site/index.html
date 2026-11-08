@@ -1,0 +1,347 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Gravador JC3248W535 — firmware pelo navegador</title>
+  <meta name="description" content="Instale firmwares na placa JC3248W535 (ESP32-S3) direto pelo navegador, sem instalar nada. Restaure o firmware de fábrica ou grave o Placar de Mesa (TCG)." />
+  <link rel="stylesheet" href="assets/estilo.css" />
+  <!-- Biblioteca embutida no repositório (sem CDN). esp-web-tools 10.4.0, Apache-2.0 -->
+  <script type="module" src="vendor/esp-web-tools/install-button.js"></script>
+</head>
+<body>
+  <header class="topo">
+    <div class="container">
+      <span class="chip">ESP32-S3 · tela 3.5" · AXS15231B</span>
+      <h1>Gravar firmware na JC3248W535 pelo navegador</h1>
+      <p class="sub">
+        Conecte a placa no cabo USB-C e grave um firmware em poucos cliques —
+        sem instalar driver, IDE nem linha de comando. Tudo acontece aqui no navegador.
+      </p>
+
+      <div id="aviso" class="aviso-navegador">
+        <span>⏳</span>
+        <div>Verificando suporte do navegador…</div>
+      </div>
+    </div>
+  </header>
+
+  <main class="container">
+
+    <!-- Passos -->
+    <section aria-label="Como funciona">
+      <div class="passos">
+        <div class="passo">
+          <div class="n">1</div>
+          <h3>Ligue a placa</h3>
+          <p>Conecte a JC3248W535 ao computador pela porta USB-C.</p>
+        </div>
+        <div class="passo">
+          <div class="n">2</div>
+          <h3>Escolha o firmware</h3>
+          <p>Clique em <b>Instalar</b> no card desejado abaixo.</p>
+        </div>
+        <div class="passo">
+          <div class="n">3</div>
+          <h3>Selecione a porta</h3>
+          <p>O navegador pede permissão: escolha a porta serial da placa.</p>
+        </div>
+        <div class="passo">
+          <div class="n">4</div>
+          <h3>Aguarde gravar</h3>
+          <p>O progresso aparece na tela. No fim, a placa reinicia sozinha.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Cards -->
+    <section class="cards" aria-label="Firmwares disponíveis">
+
+      <!-- ===== Placar de Mesa (TCG) ===== -->
+      <article class="card destaque">
+        <div class="preview">
+          <div class="device">
+            <!-- MENU -->
+            <div class="tela-view ativa" data-view="menu">
+              <svg viewBox="0 0 320 480" role="img" aria-label="Tela de menu do placar">
+                <rect width="320" height="480" fill="#0a0c14"/>
+                <!-- metade de cima (de cabeça pra baixo) -->
+                <g transform="rotate(180 160 120)">
+                  <text x="160" y="24" fill="#9094a0" font-size="13" font-weight="700"
+                        text-anchor="middle" letter-spacing="2">ESCOLHA O JOGO</text>
+                  <rect x="30" y="40" width="260" height="66" rx="12" fill="#286ec8"
+                        stroke="#f0be3c" stroke-width="3"/>
+                  <text x="46" y="76" fill="#fff" font-size="26" font-weight="800">Riftbound</text>
+                  <text x="46" y="96" fill="#cfe0f5" font-size="12">1x1 · melhor de 3</text>
+                  <rect x="30" y="120" width="260" height="66" rx="12" fill="#aa5a1e"/>
+                  <text x="46" y="156" fill="#fff" font-size="26" font-weight="800">Magic</text>
+                  <text x="46" y="176" fill="#f3ddc6" font-size="12">The Gathering · vida</text>
+                </g>
+                <!-- divisória -->
+                <rect x="0" y="238" width="320" height="4" fill="#2a2f42"/>
+                <!-- metade de baixo (para o jogador da frente) -->
+                <g>
+                  <text x="160" y="268" fill="#9094a0" font-size="13" font-weight="700"
+                        text-anchor="middle" letter-spacing="2">ESCOLHA O JOGO</text>
+                  <rect x="30" y="284" width="260" height="66" rx="12" fill="#286ec8"
+                        stroke="#f0be3c" stroke-width="3"/>
+                  <text x="46" y="320" fill="#fff" font-size="26" font-weight="800">Riftbound</text>
+                  <text x="46" y="340" fill="#cfe0f5" font-size="12">1x1 · melhor de 3</text>
+                  <rect x="30" y="364" width="260" height="66" rx="12" fill="#aa5a1e"/>
+                  <text x="46" y="400" fill="#fff" font-size="26" font-weight="800">Magic</text>
+                  <text x="46" y="420" fill="#f3ddc6" font-size="12">The Gathering · vida</text>
+                </g>
+              </svg>
+            </div>
+            <!-- RIFTBOUND -->
+            <div class="tela-view" data-view="rift">
+              <svg viewBox="0 0 320 480" role="img" aria-label="Tela do Riftbound">
+                <rect width="320" height="480" fill="#0a0c14"/>
+                <!-- oponente (cima, invertido) -->
+                <g transform="rotate(180 160 118)">
+                  <rect x="8" y="12" width="304" height="212" rx="14" fill="#501216"/>
+                  <text x="160" y="150" fill="#fff" font-size="120" font-weight="800"
+                        text-anchor="middle">3</text>
+                  <circle cx="140" cy="196" r="7" fill="#f0be3c"/>
+                  <circle cx="162" cy="196" r="7" fill="none" stroke="#f0be3c" stroke-width="2"/>
+                  <text x="196" y="201" fill="#dc9c9c" font-size="13">VERMELHO</text>
+                </g>
+                <!-- faixa do tempo -->
+                <rect x="0" y="228" width="320" height="24" fill="#161926"/>
+                <text x="160" y="245" fill="#f0f0f5" font-size="15" font-weight="700"
+                      text-anchor="middle" letter-spacing="1">47:12</text>
+                <!-- eu (baixo) -->
+                <g>
+                  <rect x="8" y="256" width="304" height="212" rx="14" fill="#0c2850"/>
+                  <text x="160" y="396" fill="#fff" font-size="120" font-weight="800"
+                        text-anchor="middle">5</text>
+                  <text x="30" y="300" fill="#8fb4e6" font-size="26" font-weight="800">−</text>
+                  <text x="284" y="300" fill="#8fb4e6" font-size="26" font-weight="800">+</text>
+                  <circle cx="140" cy="440" r="7" fill="#f0be3c"/>
+                  <circle cx="162" cy="440" r="7" fill="none" stroke="#f0be3c" stroke-width="2"/>
+                  <text x="196" y="445" fill="#9cc0f0" font-size="13">AZUL</text>
+                </g>
+              </svg>
+            </div>
+            <!-- MAGIC -->
+            <div class="tela-view" data-view="mtg">
+              <svg viewBox="0 0 320 480" role="img" aria-label="Tela do Magic">
+                <rect width="320" height="480" fill="#0a0c14"/>
+                <g transform="rotate(180 160 118)">
+                  <rect x="8" y="12" width="304" height="212" rx="14" fill="#501216"/>
+                  <text x="160" y="150" fill="#fff" font-size="120" font-weight="800"
+                        text-anchor="middle">20</text>
+                  <text x="196" y="201" fill="#dc9c9c" font-size="13">☠ 0</text>
+                </g>
+                <rect x="0" y="228" width="320" height="24" fill="#161926"/>
+                <text x="160" y="245" fill="#f0f0f5" font-size="15" font-weight="700"
+                      text-anchor="middle" letter-spacing="1">47:12</text>
+                <g>
+                  <rect x="8" y="256" width="304" height="212" rx="14" fill="#0c2850"/>
+                  <text x="160" y="396" fill="#fff" font-size="120" font-weight="800"
+                        text-anchor="middle">17</text>
+                  <text x="30" y="300" fill="#8fb4e6" font-size="26" font-weight="800">−</text>
+                  <text x="284" y="300" fill="#8fb4e6" font-size="26" font-weight="800">+</text>
+                  <text x="232" y="300" fill="#e6463c" font-size="22" font-weight="800">−3</text>
+                  <text x="30" y="455" fill="#78c83c" font-size="13">☠ 0</text>
+                </g>
+              </svg>
+            </div>
+          </div>
+          <div class="abas" role="tablist" aria-label="Pré-visualização">
+            <button role="tab" aria-selected="true" data-tab="menu">Menu</button>
+            <button role="tab" aria-selected="false" data-tab="rift">Riftbound</button>
+            <button role="tab" aria-selected="false" data-tab="mtg">Magic</button>
+          </div>
+          <div class="legenda" id="legenda-preview">
+            Menu inicial: um botão por jogo, repetido para os dois lados da mesa.
+          </div>
+        </div>
+
+        <div class="info">
+          <h2>Placar de Mesa <span class="tag novo">o seu sistema (TCG)</span></h2>
+          <p>
+            Firmware feito para esta placa: a placa fica deitada no meio da mesa e cada
+            metade da tela fica virada para um jogador. Marca pontos e vida sem precisar
+            de app no celular.
+          </p>
+          <ul class="detalhes">
+            <li><b>Riftbound</b> — 1×1, melhor de 3, vitória com 8 pontos, cronômetro de 50 min com acréscimo.</li>
+            <li><b>Magic: The Gathering</b> — vida 20/30/40, ±1 e ±5, variação recente ("−3") e contador de veneno.</li>
+            <li>Menu para trocar de jogo, cronômetro compartilhado e resets com confirmação.</li>
+            <li>Toque capacitivo; cada lado desenhado na orientação do seu jogador.</li>
+          </ul>
+          <div class="linha-acao">
+            <esp-web-install-button manifest="firmwares/placar-mesa/manifest.json">
+              <button class="instalar" slot="activate">⚡ Instalar na placa</button>
+              <span slot="unsupported">Navegador sem Web Serial — use o Chrome ou o Edge no computador.</span>
+              <span slot="not-allowed">Abra este site por HTTPS (ou localhost) para poder gravar.</span>
+            </esp-web-install-button>
+            <span class="nota">~1,3 MB · grava em segundos</span>
+          </div>
+        </div>
+      </article>
+
+      <!-- ===== Firmware de fábrica ===== -->
+      <article class="card">
+        <div class="preview">
+          <div class="device">
+            <svg viewBox="0 0 320 480" role="img" aria-label="Firmware original de fábrica">
+              <rect width="320" height="480" fill="#05060a"/>
+              <rect x="0" y="0" width="320" height="480" fill="url(#g)"/>
+              <defs>
+                <radialGradient id="g" cx="50%" cy="38%" r="60%">
+                  <stop offset="0%" stop-color="#15213a"/>
+                  <stop offset="100%" stop-color="#05060a"/>
+                </radialGradient>
+              </defs>
+              <text x="160" y="232" fill="#79839c" font-size="20" font-weight="700"
+                    text-anchor="middle">firmware</text>
+              <text x="160" y="262" fill="#79839c" font-size="20" font-weight="700"
+                    text-anchor="middle">original</text>
+              <text x="160" y="300" fill="#444b60" font-size="13" text-anchor="middle">cópia de 16 MB da fábrica</text>
+            </svg>
+          </div>
+          <div class="legenda">Imagem completa de 16 MB lida da placa antes de qualquer alteração.</div>
+        </div>
+        <div class="info">
+          <h2>Firmware de fábrica <span class="tag orig">restaurar original</span></h2>
+          <p>
+            A cópia exata do que veio instalado na placa. Use para voltar tudo ao estado
+            original a qualquer momento — ótimo para testar outros projetos sem medo.
+          </p>
+          <ul class="detalhes">
+            <li>Imagem íntegra de 16 MB (backup verificado por SHA-256).</li>
+            <li>Regrava a flash inteira no offset 0 e apaga o restante.</li>
+            <li>Por ser 16 MB, a gravação demora mais que a do Placar de Mesa.</li>
+          </ul>
+          <div class="linha-acao">
+            <esp-web-install-button manifest="firmwares/fabrica/manifest.json">
+              <button class="instalar cinza" slot="activate">↩ Restaurar original</button>
+              <span slot="unsupported">Navegador sem Web Serial — use o Chrome ou o Edge no computador.</span>
+              <span slot="not-allowed">Abra este site por HTTPS (ou localhost) para poder gravar.</span>
+            </esp-web-install-button>
+            <span class="nota">~16 MB · pode levar alguns minutos</span>
+          </div>
+        </div>
+      </article>
+
+    </section>
+
+    <!-- Sobre a placa -->
+    <section class="bloco">
+      <h2>Sobre a placa</h2>
+      <div class="grade-info">
+        <div class="item"><h3>Chip</h3><p>ESP32-S3 (2 núcleos, 240 MHz), Wi-Fi e Bluetooth 5 LE, 8 MB de PSRAM e 16 MB de flash.</p></div>
+        <div class="item"><h3>Tela</h3><p>IPS 3.5" 320×480, controlador AXS15231B via QSPI, com toque capacitivo.</p></div>
+        <div class="item"><h3>USB</h3><p>USB-Serial/JTAG nativo do S3 — grava direto, sem chip conversor separado.</p></div>
+        <div class="item"><h3>Extras</h3><p>Slot de cartão SD, saída de áudio e conector de bateria.</p></div>
+      </div>
+    </section>
+
+    <!-- FAQ / segurança -->
+    <section class="bloco">
+      <h2>Dúvidas comuns</h2>
+
+      <details class="faq">
+        <summary>É seguro? O que acontece com a placa?</summary>
+        <p>
+          A gravação usa a Web Serial API do navegador: você precisa autorizar a porta
+          manualmente, nada acontece sem a sua permissão. O código da biblioteca de
+          gravação (esp-web-tools) é aberto e está embutido aqui no próprio repositório —
+          não depende de servidor externo. E o firmware de fábrica continua disponível
+          para reverter tudo quando quiser.
+        </p>
+      </details>
+
+      <details class="faq">
+        <summary>Qual navegador funciona?</summary>
+        <p>
+          Chrome, Edge ou Opera no computador (desktop). Firefox e Safari ainda não têm
+          Web Serial. No celular não funciona. O site também só grava quando aberto por
+          <b>HTTPS</b> (como no GitHub Pages) ou por <b>localhost</b>.
+        </p>
+      </details>
+
+      <details class="faq">
+        <summary>A placa não aparece na hora de escolher a porta</summary>
+        <p>
+          Desconecte e reconecte o cabo USB-C e tente de novo (foi o que resolveu nos
+          testes). Use um cabo que transmita dados, não só de carga. No Windows a placa
+          costuma aparecer como COM3.
+        </p>
+      </details>
+
+      <details class="faq">
+        <summary>Posso voltar para o firmware original depois?</summary>
+        <p>
+          Sim. É só usar o card <b>Restaurar original</b> acima. Ele regrava a imagem de
+          16 MB que foi lida da placa antes de qualquer modificação.
+        </p>
+      </details>
+
+      <details class="faq">
+        <summary>Quero adicionar meus próprios projetos aqui</summary>
+        <p>
+          Cada firmware é uma pasta em <code>site/firmwares/</code> com um
+          <code>manifest.json</code> e os binários. Veja o <code>LEIA-ME.md</code> do
+          repositório para o passo a passo (inclusive o uso futuro para medir temperatura
+          e clima dentro e fora de casa).
+        </p>
+      </details>
+    </section>
+
+  </main>
+
+  <footer class="rodape">
+    <div class="container">
+      <p>
+        Gravador da placa JC3248W535 · feito com
+        <a href="https://github.com/esphome/esp-web-tools" target="_blank" rel="noopener">esp-web-tools</a>
+        (Apache-2.0), embutido no repositório.
+      </p>
+      <p>Firmwares: Placar de Mesa (TCG) e cópia de fábrica · ESP32-S3.</p>
+    </div>
+  </footer>
+
+  <script>
+    // Suporte do navegador (Web Serial + contexto seguro)
+    (function () {
+      var box = document.getElementById('aviso');
+      var temSerial = 'serial' in navigator;
+      var seguro = window.isSecureContext;
+      if (temSerial && seguro) {
+        box.className = 'aviso-navegador ok';
+        box.innerHTML = '<span>✅</span><div>Seu navegador tem tudo o que precisa. '
+          + 'Conecte a placa e clique em <b>Instalar</b>.</div>';
+      } else if (temSerial && !seguro) {
+        box.innerHTML = '<span>🔒</span><div>Abra este site por <b>HTTPS</b> (GitHub Pages) '
+          + 'ou por <b>localhost</b> para poder gravar.</div>';
+      } else {
+        box.innerHTML = '<span>⚠️</span><div>Este navegador não tem <b>Web Serial</b>. '
+          + 'Use o <b>Chrome</b>, <b>Edge</b> ou <b>Opera</b> no computador (não funciona no celular, Firefox ou Safari).</div>';
+      }
+    })();
+
+    // Abas do preview
+    (function () {
+      var legendas = {
+        menu: 'Menu inicial: um botão por jogo, repetido para os dois lados da mesa.',
+        rift: 'Riftbound: pontos até 8, melhor de 3 (bolinhas) e cronômetro no meio.',
+        mtg:  'Magic: vida inicial 20/30/40, ±1 e ±5, variação recente e veneno.'
+      };
+      var abas = document.querySelectorAll('.abas button');
+      var views = document.querySelectorAll('.tela-view');
+      var leg = document.getElementById('legenda-preview');
+      abas.forEach(function (b) {
+        b.addEventListener('click', function () {
+          var alvo = b.getAttribute('data-tab');
+          abas.forEach(function (x) { x.setAttribute('aria-selected', x === b ? 'true' : 'false'); });
+          views.forEach(function (v) { v.classList.toggle('ativa', v.getAttribute('data-view') === alvo); });
+          leg.textContent = legendas[alvo] || '';
+        });
+      });
+    })();
+  </script>
+</body>
+</html>
