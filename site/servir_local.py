@@ -18,6 +18,7 @@ Opcional, se você já compilou o placar-mesa localmente e quer testá-lo també
 """
 import argparse
 import glob
+import hashlib
 import http.server
 import os
 import shutil
@@ -41,6 +42,20 @@ def achar_boot_app0():
         if achados:
             return achados[0]
     return None
+
+
+def gerar_sha256(pasta):
+    """Grava SHA256SUMS.txt (formato do sha256sum) com os .bin da pasta."""
+    bins = sorted(n for n in os.listdir(pasta) if n.endswith(".bin"))
+    if not bins:
+        return
+    with open(os.path.join(pasta, "SHA256SUMS.txt"), "w") as saida:
+        for nome in bins:
+            h = hashlib.sha256()
+            with open(os.path.join(pasta, nome), "rb") as f:
+                for bloco in iter(lambda: f.read(1 << 20), b""):
+                    h.update(bloco)
+            saida.write("%s  %s\n" % (h.hexdigest(), nome))
 
 
 def montar(placar_build):
@@ -88,6 +103,10 @@ def montar(placar_build):
     else:
         print("  [--] placar-mesa não incluído (use --placar-build para testá-lo)")
         print("       o card do placar vai aparecer, mas sem binário para gravar.")
+
+    # 3) SHA-256 de cada binário (o site mostra para conferência)
+    for nome in ("fabrica", "placar-mesa"):
+        gerar_sha256(os.path.join(SAIDA, "firmwares", nome))
 
 
 def servir(porta):

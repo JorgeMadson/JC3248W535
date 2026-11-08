@@ -198,6 +198,15 @@ Dois firmwares são oferecidos:
 - Só grava em **contexto seguro**: HTTPS (GitHub Pages) ou `localhost`.
 - O navegador **pede permissão** da porta serial; nada roda sem o usuário autorizar.
 - A biblioteca de gravação é aberta e local; o firmware de fábrica permite reverter.
+- O site tem **Content-Security-Policy**: só carrega scripts do próprio domínio (o JS
+  fica em `site/assets/app.js`, nada inline).
+- Cada card mostra o **SHA-256** dos `.bin` publicados (`SHA256SUMS.txt`, gerado pela CI
+  e pelo `servir_local.py`) para conferir o que vai ser gravado.
+- Na CI: actions fixadas por **SHA**, PlatformIO com **versão fixa**, e a permissão de
+  publicar no Pages só existe no job `deploy` (o `build`, que baixa toolchain e
+  bibliotecas, só lê o repositório).
+- A cópia de fábrica é publicada no Pages (decisão consciente): é software do fabricante
+  e contém o MAC da placa; não contém senha de Wi-Fi.
 
 ### Como publicar no GitHub Pages
 1. Suba este repositório para o GitHub (branch `main`).

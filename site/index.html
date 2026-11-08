@@ -5,6 +5,10 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Gravador JC3248W535 — firmware pelo navegador</title>
   <meta name="description" content="Instale firmwares na placa JC3248W535 (ESP32-S3) direto pelo navegador, sem instalar nada. Restaure o firmware de fábrica ou grave o Placar de Mesa (TCG)." />
+  <!-- CSP: só recursos do próprio site. 'unsafe-inline' em estilos porque os
+       componentes do esp-web-tools aplicam style em tempo de execução. -->
+  <meta http-equiv="Content-Security-Policy"
+        content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'" />
   <link rel="stylesheet" href="assets/estilo.css" />
   <!-- Biblioteca embutida no repositório (sem CDN). esp-web-tools 10.4.0, Apache-2.0 -->
   <script type="module" src="vendor/esp-web-tools/install-button.js"></script>
@@ -179,6 +183,7 @@
             </esp-web-install-button>
             <span class="nota">~1,3 MB · grava em segundos</span>
           </div>
+          <p class="sha" data-sums="firmwares/placar-mesa/SHA256SUMS.txt"></p>
         </div>
       </article>
 
@@ -223,6 +228,7 @@
             </esp-web-install-button>
             <span class="nota">~16 MB · pode levar alguns minutos</span>
           </div>
+          <p class="sha" data-sums="firmwares/fabrica/SHA256SUMS.txt"></p>
         </div>
       </article>
 
@@ -304,44 +310,6 @@
     </div>
   </footer>
 
-  <script>
-    // Suporte do navegador (Web Serial + contexto seguro)
-    (function () {
-      var box = document.getElementById('aviso');
-      var temSerial = 'serial' in navigator;
-      var seguro = window.isSecureContext;
-      if (temSerial && seguro) {
-        box.className = 'aviso-navegador ok';
-        box.innerHTML = '<span>✅</span><div>Seu navegador tem tudo o que precisa. '
-          + 'Conecte a placa e clique em <b>Instalar</b>.</div>';
-      } else if (temSerial && !seguro) {
-        box.innerHTML = '<span>🔒</span><div>Abra este site por <b>HTTPS</b> (GitHub Pages) '
-          + 'ou por <b>localhost</b> para poder gravar.</div>';
-      } else {
-        box.innerHTML = '<span>⚠️</span><div>Este navegador não tem <b>Web Serial</b>. '
-          + 'Use o <b>Chrome</b>, <b>Edge</b> ou <b>Opera</b> no computador (não funciona no celular, Firefox ou Safari).</div>';
-      }
-    })();
-
-    // Abas do preview
-    (function () {
-      var legendas = {
-        menu: 'Menu inicial: um botão por jogo, repetido para os dois lados da mesa.',
-        rift: 'Riftbound: pontos até 8, melhor de 3 (bolinhas) e cronômetro no meio.',
-        mtg:  'Magic: vida inicial 20/30/40, ±1 e ±5, variação recente e veneno.'
-      };
-      var abas = document.querySelectorAll('.abas button');
-      var views = document.querySelectorAll('.tela-view');
-      var leg = document.getElementById('legenda-preview');
-      abas.forEach(function (b) {
-        b.addEventListener('click', function () {
-          var alvo = b.getAttribute('data-tab');
-          abas.forEach(function (x) { x.setAttribute('aria-selected', x === b ? 'true' : 'false'); });
-          views.forEach(function (v) { v.classList.toggle('ativa', v.getAttribute('data-view') === alvo); });
-          leg.textContent = legendas[alvo] || '';
-        });
-      });
-    })();
-  </script>
+  <script src="assets/app.js"></script>
 </body>
 </html>
