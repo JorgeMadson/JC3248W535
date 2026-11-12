@@ -12,6 +12,7 @@ e feito com ela, para facilitar os próximos projetos.
 | `backup/jc3248w535_fabrica_16MB.bin` | Cópia completa (16 MB) da memória original de fábrica |
 | `site/` | **Gravador pelo navegador** (GitHub Pages): instala firmwares na placa sem IDE |
 | `.github/workflows/deploy-pages.yml` | Compila o firmware e publica o gravador no GitHub Pages |
+| `case-3d/` | **Case modular para impressão 3D** (OpenSCAD): case base + módulos de bateria e antena. Prévia com medidas da internet |
 | `INVENTARIO.md` | **Hardware que eu tenho** (peças, estado de cada uma, ligações planejadas) e descobertas |
 | `README.md` | Este arquivo |
 
@@ -116,6 +117,56 @@ Tabela de partições:
 | app1 | app | 0x210000 | 2048 KB |
 | ffat | data (FAT) | 0x410000 | 12160 KB |
 | coredump | data | 0xFF0000 | 64 KB |
+
+## Case modular para impressão 3D (`case-3d/`)
+
+**Estado (12/11/2026): prévia para visualizar, ainda não é para imprimir.** As medidas
+vêm da internet ou são suposições. Nada foi medido na placa.
+
+![Montada, de frente](case-3d/previews/01_frente_montada.png)
+![Explodida, com o cartucho da bateria JBL](case-3d/previews/03_explodida_jbl.png)
+
+### O que já foi decidido
+- **Medidas** ficam só em `case-3d/parametros.scad`, cada uma com uma etiqueta:
+  `[NET]` publicada, `[PDF~]` estimada pelos pixels do desenho do fabricante (±1 mm),
+  `[SUP]` suposição (**a medir**), `[PROJ]` escolha de projeto.
+- **Fonte** da placa: [PDF da Guition](https://done.land/assets/files/jc3248w535%20specifications-en.pdf),
+  com módulo de 94,5 × 62,0 mm e área visível de 73,4 × 49,0 mm. Pelo desenho da pág. 5, a placa vem numa
+  carcaça com **4 furos nos cantos**, e o **USB-C e todos os conectores ficam nas costas**,
+  não nas bordas. Também aparecem um botão de bateria (ao lado do P5) e Boot/Reset. Tudo isso
+  **falta confirmar na placa**. A espessura da placa não aparece em nenhuma fonte.
+- **Case base** com 2 peças:
+  - **moldura**: segura a placa pela borda da tela;
+  - **tampa traseira**: parafusa nos furos da placa (M2, suposto) e prende a moldura entre
+    a placa e a tampa. Tem janelas para USB-C, P1–P6, botão da bateria e Boot/Reset.
+- **Encaixe dos módulos**: trilho em **rabo de andorinha** (fêmea na tampa, macho no módulo),
+  entrando pela borda oposta ao USB-C, com **trava de pressão** (calombo + covinha). Um
+  módulo por vez. Uma **porta em posição fixa**, igual em todos os módulos, leva a
+  ligação elétrica para dentro da case (pensada para um conector magnético pogo de 2 pinos).
+- **Módulos prontos na prévia**: cartucho de bateria (JBL 750 mAh ou Rontek 1300 mAh, o mesmo
+  arquivo com `bateria = 0/1`) e caixa do NRF24 com o SMA saindo pela ponta. O módulo de
+  som (capa da Go 3) fica para depois de medir a capa.
+- **Impressão**: todas as peças imprimem **sem suporte** na posição em que saem do arquivo.
+  O primeiro teste é `teste_encaixe.scad`: bloco com 3 folgas (0,15 / 0,25 / 0,35 mm) e uma chave.
+
+Espessura total com as suposições atuais: 21,5 mm só a case, 29 mm com a bateria JBL,
+34 mm com a Rontek e 37 mm com a antena. A largura é 99 × 67 mm.
+
+### Como usar
+```
+cd case-3d
+./gerar_stl.sh        # todos os STL em case-3d/stl/ (fora do git)
+./gerar_previews.sh   # imagens em case-3d/previews/
+```
+Para ver e girar: abrir `montagem.scad` no OpenSCAD (variáveis `modulo`, `explodir`).
+O OpenSCAD 2021.01 está instalado como Flatpak do usuário, com o atalho
+`~/.local/bin/openscad`. Ele só enxerga a pasta pessoal (não o `/tmp`). Para exportar PNG ele
+precisa de `flatpak run --socket=x11 ...`, que já está no script. Sem isso, o PNG sai vazio.
+
+### Falta (antes de imprimir de verdade)
+Medir a placa (lista em `case-3d/MEDIDAS.md`, grupo A): **espessura**, furos (posição,
+diâmetro e rosca), posição real dos conectores e do USB-C, onde fica o microSD, e o tamanho
+da capa do plugue USB-C do cabo. Depois imprimir o `teste_encaixe` e ajustar `folga_trilho`.
 
 ## Comandos úteis
 

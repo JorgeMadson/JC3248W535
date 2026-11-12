@@ -16,3 +16,6 @@ __pycache__/
 
 # Teste local do gravador
 _site_local/
+
+# STL gerados a partir dos .scad (case-3d/)
+case-3d/stl/
