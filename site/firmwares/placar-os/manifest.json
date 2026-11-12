@@ -1,0 +1,14 @@
+{
+  "name": "JC3248W535 — Sistema com apps + Placar de Mesa",
+  "version": "1.0",
+  "funding_url": "",
+  "new_install_prompt_erase": true,
+  "builds": [
+    {
+      "chipFamily": "ESP32-S3",
+      "parts": [
+        { "path": "placar-os.factory.bin", "offset": 0 }
+      ]
+    }
+  ]
+}
