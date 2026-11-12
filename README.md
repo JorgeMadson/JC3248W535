@@ -35,7 +35,8 @@ SHA-256 do backup: `0316E368593540D189F9F9C4F34947693771373931DA232F7B3DDF4FFDD1
   com um firmware de teste de tons (que confirmou os pinos I2S) e no sistema de fábrica,
   que tocou música do cartão SD.
 - Conector de bateria **P5** (JST 1,25 mm, 2 pinos), com carregador na placa (talvez IP5306).
-  **`+` é o pino mais perto do USB-C.** Bateria testada: LiPo GSP383562 3,7 V 750 mAh (da JBL Go 3).
+  **`+` é o pino mais perto do USB-C.** Testado em 12/11/2026 com a LiPo GSP383562 de 750 mAh
+  (da JBL Go 3): carrega pelo USB e a placa roda só na bateria. Ver `INVENTARIO.md`.
 
 ## Pinos (confirmados funcionando)
 
@@ -81,9 +82,11 @@ Do esquema publicado em [done.land](https://done.land/components/microcontroller
 | Tensão da bateria (ADC1_CH4) | 5, divisor R26 = 33k (em cima) / R27 = 100k → `Vbat = Vpino × 1,33` |
 | SD (SPI) CS / MOSI / SCK / MISO | 10 / 11 / 12 / 13 |
 
-No firmware de teste, a leitura da bateria (`analogReadMilliVolts(5)`, atenuação 11 dB) deu
-2457 mV no pino (≈ 3,27 V) e **ainda não foi comparada com o multímetro**. Se não bater, o
-fator do divisor precisa ser ajustado.
+A leitura da bateria (`analogReadMilliVolts(5)`, atenuação 11 dB) muda com a bateria
+ligada. Os 2457 mV no pino (≈ 3,27 V) que apareceram no primeiro teste são o que a placa
+lê **sem bateria** com o USB ligado. A leitura **ainda não foi comparada com o
+multímetro**. Se não bater, o fator do divisor precisa ser ajustado. O firmware
+`carregador/` mostra a tensão, a carga e o estado na tela.
 
 **Bluetooth de áudio: não disponível (confirmado no chip em 12/11/2026).** O `esptool chip_id`
 nesta placa responde `Features: WiFi, BLE`. Como diz a ficha técnica da Espressif, o ESP32-S3 tem só
