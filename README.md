@@ -12,6 +12,7 @@ e feito com ela, para facilitar os próximos projetos.
 | `backup/jc3248w535_fabrica_16MB.bin` | Cópia completa (16 MB) da memória original de fábrica |
 | `site/` | **Gravador pelo navegador** (GitHub Pages): instala firmwares na placa sem IDE |
 | `.github/workflows/deploy-pages.yml` | Compila o firmware e publica o gravador no GitHub Pages |
+| `INVENTARIO.md` | **Hardware que eu tenho** (peças, estado de cada uma, ligações planejadas) e descobertas |
 | `README.md` | Este arquivo |
 
 **Guarde uma cópia do backup em outro lugar também (pendrive, nuvem).**
@@ -27,7 +28,14 @@ SHA-256 do backup: `0316E368593540D189F9F9C4F34947693771373931DA232F7B3DDF4FFDD1
 - USB: **USB-Serial/JTAG nativo** do S3 (VID `303A`, PID `1001`), aparece como **COM3** no Windows
 - Tela: IPS 3.5", **320×480** (retrato nativo), controlador **AXS15231B** via **QSPI**
 - Toque: capacitivo, integrado no mesmo AXS15231B, via I2C
-- Tem slot de cartão SD, saída pra alto-falante e conector de bateria (não testados ainda)
+- Slot de cartão microSD (SPI)
+- Saída de alto-falante **P6** (JST 1,25 mm, 2 pinos): amplificador I2S mono (NS4168 ou
+  MAX98357A; o esquema não diz). Saída **diferencial**: nenhum dos fios é GND.
+  **Testado em 12/11/2026** com o alto-falante de uma JBL Go 3 (HSS03221, 4 Ω): funciona
+  com um firmware de teste de tons (que confirmou os pinos I2S) e no sistema de fábrica,
+  que tocou música do cartão SD.
+- Conector de bateria **P5** (JST 1,25 mm, 2 pinos), com carregador na placa (talvez IP5306).
+  **`+` é o pino mais perto do USB-C.** Bateria testada: LiPo GSP383562 3,7 V 750 mAh (da JBL Go 3).
 
 ## Pinos (confirmados funcionando)
 
@@ -40,6 +48,7 @@ SHA-256 do backup: `0316E368593540D189F9F9C4F34947693771373931DA232F7B3DDF4FFDD1
 | Toque I2C SDA / SCL | 4 / 8 |
 | Endereço I2C do toque | `0x3B` |
 | Toque INT (não usado) | 3 |
+| Som I2S BCLK / LRCLK (WS) / DATA | 42 / 2 / 41 (confirmado 12/11/2026) |
 | Tela TE (não usado) | 38 |
 
 O toque já sai nas mesmas coordenadas da tela em retrato (0–319, 0–479), sem precisar
@@ -63,9 +72,38 @@ inverter nada. Leitura: enviar os bytes
 
 Configuração completa: ver `placar-mesa/platformio.ini`.
 
+## Pinos do esquema (ainda não confirmados)
+
+Do esquema publicado em [done.land](https://done.land/components/microcontroller/families/esp/esp32/developmentboards/esp32-s3/guitionjc3248w535/).
+
+| Função | GPIO / detalhe |
+|---|---|
+| Tensão da bateria (ADC1_CH4) | 5, divisor R26 = 33k (em cima) / R27 = 100k → `Vbat = Vpino × 1,33` |
+| SD (SPI) CS / MOSI / SCK / MISO | 10 / 11 / 12 / 13 |
+
+No firmware de teste, a leitura da bateria (`analogReadMilliVolts(5)`, atenuação 11 dB) deu
+2457 mV no pino (≈ 3,27 V) e **ainda não foi comparada com o multímetro**. Se não bater, o
+fator do divisor precisa ser ajustado.
+
+**Bluetooth de áudio: não disponível (confirmado no chip em 12/11/2026).** O `esptool chip_id`
+nesta placa responde `Features: WiFi, BLE`. Como diz a ficha técnica da Espressif, o ESP32-S3 tem só
+Bluetooth LE, sem o Bluetooth clássico (BR/EDR) que o perfil de áudio A2DP usa (caixas
+como a JBL, fones, celular). Se for isso mesmo, a placa não vira caixa Bluetooth nem manda
+som para uma, e o áudio sem fio teria que ir por Wi-Fi.
+Evidências até agora (12/11/2026): a leitura do chip em 07/11 mostrou só "Bluetooth 5 (LE)";
+um programa de teste com `BluetoothSerial` (Bluetooth clássico) **não compila** para o S3
+(faltam as funções `esp_bt_gap_*`, o SDK do S3 não as tem); o sistema de fábrica não usa
+Bluetooth nenhum.
+
 ## Sistema de fábrica (original)
 
-Feito em Arduino. Não imprime nada na serial depois do boot. Tabela de partições:
+Feito em Arduino. Não imprime nada na serial depois do boot. Pelos textos dentro do binário:
+Arduino sobre **ESP-IDF 5.1.4**, interface em **LVGL**, MP3 com **arduino-libhelix 0.8.3**
+(músicas na pasta `/music` do cartão SD). Telas: relógio com temas, álbum (slideshow),
+espectro, monitor do PC (AIDA64), clima e player de música, mais uma página web pelo Wi-Fi
+para configurar. Não foi achado código-fonte publicado desse aplicativo.
+
+Tabela de partições:
 
 | Nome | Tipo | Início | Tamanho |
 |---|---|---|---|
@@ -79,6 +117,24 @@ Feito em Arduino. Não imprime nada na serial depois do boot. Tabela de partiç�
 ## Comandos úteis
 
 Ferramentas instaladas no Python do usuário (`pip install --user esptool platformio`).
+
+### No Steam Deck (Linux)
+
+O PlatformIO 6.2.0 fica num ambiente Python isolado em `~/.local/share/pio-venv`, com
+`pio` ligado em `~/.local/bin`. Instalação:
+```
+python3 -m venv ~/.local/share/pio-venv
+~/.local/share/pio-venv/bin/pip install "platformio==6.2.0"
+ln -sf ~/.local/share/pio-venv/bin/pio ~/.local/bin/pio
+```
+- A placa aparece como `/dev/ttyACM1` (ou outro número), e o usuário `deck` já tem acesso
+  pela regra `uaccess` do SteamOS (não precisa de `sudo` nem de regra udev).
+- **Cuidado: `/dev/ttyACM0` é o controle embutido do Deck.** Sem porta definida, o
+  PlatformIO pode tentar gravar nele. Use o caminho fixo da placa (inclui o MAC):
+  `/dev/serial/by-id/usb-Espressif_USB_JTAG_serial_debug_unit_28:84:85:49:B7:1C-if00`
+  no `platformio.ini`: `upload_port = <esse caminho>` (curinga `*` nesse caminho não funciona).
+- Se a placa não aparecer no `lsusb` (`303a:1001`), troque de porta na dock ou troque o cabo.
+  Em 12/11/2026 uma porta do hub não achou a placa, outra porta da dock funcionou.
 
 Compilar e gravar (dentro de `placar-mesa/`):
 ```
