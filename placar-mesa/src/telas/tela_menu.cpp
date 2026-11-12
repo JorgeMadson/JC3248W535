@@ -16,6 +16,8 @@ constexpr int16_t BOTOES_Y = METADE + 56;
 constexpr int16_t BOTOES_H = ALTURA_TELA - BOTOES_Y - 12;
 constexpr int16_t ESPACO = 10;
 constexpr int16_t MARGEM = 16;
+// Botão "Sair" sobre a divisória do meio (coordenadas de tela, só se ctx.sair).
+constexpr Retangulo BOTAO_SAIR = {LARGURA_TELA / 2 - 44, METADE - 18, 88, 36};
 }  // namespace
 
 TelaMenu::TelaMenu(Contexto& ctx) : ctx_(ctx) {
@@ -32,6 +34,10 @@ Retangulo TelaMenu::areaBotao(size_t i) const {
 
 void TelaMenu::aoEvento(const Evento& e) {
   if (e.tipo != TipoEvento::Tap) return;
+  if (ctx_.sair && BOTAO_SAIR.recuado(-8).contem(e.ponto)) {
+    ctx_.sair();
+    return;
+  }
   Lado lado = ladoDoPonto(e.ponto);
   Ponto local = paraLocal(lado, e.ponto);
   const auto& jogos = jogosRegistrados();
@@ -64,6 +70,10 @@ void TelaMenu::desenhar(Pintor& p) {
     }
   }
   p.orientar(Lado::Baixo);
+  if (ctx_.sair) {
+    p.arredondado(BOTAO_SAIR, 18, cor::BOTAO_NEUTRO);
+    p.texto("Sair", BOTAO_SAIR.centroX(), BOTAO_SAIR.centroY(), Fonte::Legenda, cor::TEXTO);
+  }
 }
 
 }  // namespace placar
