@@ -8,6 +8,7 @@ e feito com ela, para facilitar os próximos projetos.
 | Pasta / arquivo | O que é |
 |---|---|
 | `placar-mesa/` | **Projeto atual** (gravado na placa): placar de mesa com vários jogos (Riftbound, Magic) |
+| `freedoom/` | **Freedoom** (motor do Doom): firmware próprio e o app Freedoom do launcher, com o mesmo código. **Roda na placa** (no launcher, jogo no microSD) |
 | `riftbound-contador/` | Protótipo antigo do contador Riftbound (só referência) |
 | `backup/jc3248w535_fabrica_16MB.bin` | Cópia completa (16 MB) da memória original de fábrica |
 | `site/` | **Gravador pelo navegador** (GitHub Pages): instala firmwares na placa sem IDE |
@@ -29,7 +30,7 @@ SHA-256 do backup: `0316E368593540D189F9F9C4F34947693771373931DA232F7B3DDF4FFDD1
 - USB: **USB-Serial/JTAG nativo** do S3 (VID `303A`, PID `1001`), aparece como **COM3** no Windows
 - Tela: IPS 3.5", **320×480** (retrato nativo), controlador **AXS15231B** via **QSPI**
 - Toque: capacitivo, integrado no mesmo AXS15231B, via I2C
-- Slot de cartão microSD (SPI)
+- Slot de cartão microSD: **funciona** em modo SD nativo de 1 bit (SDMMC) e em SPI, pinos 10–13 (confirmado em 14/11/2026 no launcher)
 - Saída de alto-falante **P6** (JST 1,25 mm, 2 pinos): amplificador I2S mono (NS4168 ou
   MAX98357A; o esquema não diz). Saída **diferencial**: nenhum dos fios é GND.
   **Testado em 12/11/2026** com o alto-falante de uma JBL Go 3 (HSS03221, 4 Ω): funciona
@@ -52,6 +53,12 @@ SHA-256 do backup: `0316E368593540D189F9F9C4F34947693771373931DA232F7B3DDF4FFDD1
 | Toque INT (não usado) | 3 |
 | Som I2S BCLK / LRCLK (WS) / DATA | 42 / 2 / 41 (confirmado 12/11/2026) |
 | Tela TE (não usado) | 38 |
+| microSD CS (DAT3) / MOSI (CMD) / SCK (CLK) / MISO (DAT0) | 10 / 11 / 12 / 13 (confirmado 14/11/2026; no modo SDMMC de 1 bit o CS fica em nível alto) |
+
+**O cartão não desliga quando o chip reinicia** (gravar pelo USB, abrir a serial, travamento).
+Se o reset pega o cartão no meio de uma leitura, ele não responde mais até ficar sem energia:
+tire o USB **e** a bateria por uns segundos. O launcher (`sd_card.cpp` do fork) tenta destravar
+sozinho antes de desistir.
 
 O toque já sai nas mesmas coordenadas da tela em retrato (0–319, 0–479), sem precisar
 inverter nada. Leitura: enviar os bytes
@@ -81,7 +88,6 @@ Do esquema publicado em [done.land](https://done.land/components/microcontroller
 | Função | GPIO / detalhe |
 |---|---|
 | Tensão da bateria (ADC1_CH4) | 5, divisor R26 = 33k (em cima) / R27 = 100k → `Vbat = Vpino × 1,33` |
-| SD (SPI) CS / MOSI / SCK / MISO | 10 / 11 / 12 / 13 |
 
 A leitura da bateria (`analogReadMilliVolts(5)`, atenuação 11 dB) muda com a bateria
 ligada. Os 2457 mV no pino (≈ 3,27 V) que apareceram no primeiro teste são o que a placa
@@ -189,6 +195,21 @@ ln -sf ~/.local/share/pio-venv/bin/pio ~/.local/bin/pio
   no `platformio.ini`: `upload_port = <esse caminho>` (curinga `*` nesse caminho não funciona).
 - Se a placa não aparecer no `lsusb` (`303a:1001`), troque de porta na dock ou troque o cabo.
   Em 12/11/2026 uma porta do hub não achou a placa, outra porta da dock funcionou.
+- **Testes no PC (gcc)**: o SteamOS não tem gcc. Seguindo a sugestão da Valve, ele fica num
+  container do `distrobox` chamado `dev-gcc` (Arch Linux), com um PlatformIO próprio:
+  ```
+  distrobox create --name dev-gcc --image docker.io/library/archlinux:latest
+  distrobox enter dev-gcc -- sudo pacman -Syu --needed gcc python make
+  distrobox enter dev-gcc -- bash -lc 'python3 -m venv ~/.local/share/pio-venv-box && ~/.local/share/pio-venv-box/bin/pip install "platformio==6.2.0"'
+  # rodar (placar-mesa precisa do PLATFORMIO_BUILD_DIR por causa do build_dir do Windows):
+  distrobox enter dev-gcc -- bash -lc 'cd ~/dev/JC3248W535/placar-mesa && PLATFORMIO_CORE_DIR=~/.platformio-box PLATFORMIO_BUILD_DIR=$PWD/.pio/build-native ~/.local/share/pio-venv-box/bin/pio test -e native'
+  ```
+- **Launcher (fork, ESP-IDF 6.1) e estes projetos (espressif32 6.9.0) não dividem a
+  `~/.platformio`**: os dois pedem versões diferentes do esptool e o build do fork quebra com
+  `TypeError ... NoneType` em `scripts/idf_build.py`. O fork usa outra pasta:
+  `PLATFORMIO_CORE_DIR=~/.platformio-idf pio run -t upload --upload-port <porta da placa>`
+  (o `platformio.ini` dele não tem porta: sempre passe a da placa).
+- Atualizar as bibliotecas (Arduino 3, GFX nova): ver `PROMPT-dependencias.md`.
 
 Compilar e gravar (dentro de `placar-mesa/`):
 ```
@@ -240,7 +261,12 @@ A placa fica deitada no meio da mesa; cada metade da tela é virada para um joga
 - **Riftbound**: pontos até 8 (metade esquerda do painel = −1, direita = +1), série melhor
   de três (bolinhas), tela de resultado com *Desfazer* / *Próxima partida* / *Nova série*.
 - **Magic**: vida 20/30/40 (salva na NVS), ±1 (segurar repete), ±5, variação recente
-  ("−7", some em 3 s), veneno (10 = derrota).
+  ("−7", some em 3 s), veneno (10 = derrota). Série melhor de três, igual ao Riftbound:
+  vida em 0 ou 10 venenos encerra a partida e abre a tela de resultado (*Desfazer* volta
+  ao valor de antes do toque fatal). A vida fica vermelha de 5 para baixo.
+- **Visual**: cada painel é um cartão com a cor do jogador; botões + e − desenhados em
+  barras; barra de segmentos com os pontos do Riftbound; barra do tempo que resta sob o
+  cronômetro (vermelha nos últimos 10%); o botão tocado ganha um contorno por um instante.
 - **Comum**: cronômetro na faixa do meio (toque inicia/pausa; depois de zerar conta o
   acréscimo); botão **≡** em cada painel abre as opções (zerar, voltar ao menu...),
   sempre com confirmação e virado para quem tocou.
@@ -281,6 +307,94 @@ Coordenadas: cada jogador desenha e testa toques em coordenadas **locais** (a me
    ```
    e inclua o header. O menu se ajusta sozinho.
 4. `python -m platformio test -e native` e `python -m platformio run -t upload`.
+
+## Projeto: Freedoom (`freedoom/`)
+
+O [Freedoom](https://freedoom.github.io/) (jogo livre que usa o motor do Doom) rodando
+na placa. **Estado (14/11/2026): compila (764 KB), mas ainda não foi gravado nem testado
+na placa.** O que pode precisar de ajuste no primeiro teste está em "A conferir".
+
+- **Motor**: [doomgeneric](https://github.com/ozkl/doomgeneric) (GPL v2), copiado em
+  `freedoom/lib/doomgeneric/` com poucos ajustes (lista em `LEIAME.md` de lá).
+- **Dois firmwares, um código**: vídeo, controles de toque e mixer de som ficam em
+  `freedoom/src/comum/` e são usados pelo firmware próprio (Arduino, `src/placa.cpp`) e pelo
+  launcher ([JC3248W535EN-fork](https://github.com/JorgeMadson/JC3248W535EN-fork), app
+  **Freedoom** no lugar do Relógio, `src/doom/`). Cada um fornece só a "placa" (`comum/placa.h`)
+  e o seu `config_placa.h`.
+- **No launcher**: o jogo vem só do cartão (`freedoom1.wad` na raiz) e salva em `/freedoom/`.
+  Lá não há volta para o launcher: "Sair do jogo" reinicia a placa.
+- **Tela**: o Doom desenha 320×200 e a imagem é esticada para 480×320, com a placa deitada.
+- **Som**: efeitos pelo alto-falante do P6 (I2S). **Sem música** por enquanto.
+- **Jogo**: o `freedoom1.wad` inteiro tem 28,8 MB e não cabe na flash de 16 MB, então:
+  - **microSD (jogo completo, 4 episódios)**: copie o `freedoom1.wad` para a raiz do
+    cartão (FAT32). Os saves ficam em `/freedoom/` no cartão. Também aceita
+    `freedoom2.wad`, `doom.wad`, `doom1.wad` e `doom2.wad`.
+  - **Flash (reserva, sem cartão)**: só o episódio 1 (11,35 MB), gerado por
+    `ferramentas/montar_wad.py`. Os saves ficam numa partição de 1 MB da flash.
+  - Com cartão e o WAD nele, o cartão ganha. Sem nenhum dos dois, a tela explica o que fazer.
+
+### Como gravar (dentro de `freedoom/`)
+```
+pio run -t upload                    # o programa
+python3 ferramentas/montar_wad.py    # baixa o Freedoom 0.13.0 e monta o episódio 1
+pio run -t gravar_wad                # grava o episódio 1 na flash (uma vez só)
+```
+O `freedoom1.wad` para o cartão está dentro do zip que o `montar_wad.py` baixa
+(`freedoom/.cache/freedoom-0.13.0.zip`) ou em <https://freedoom.github.io/download.html>.
+
+Este projeto usa uma tabela de partições própria (`particoes.csv`). Para voltar ao
+placar-mesa, é só gravar o placar de novo (`pio run -t upload` lá).
+
+### Controles (toque, tela deitada)
+```
++------+----------------------------+------+
+| MENU |                            | MAPA |
++------+-------------+-------+------+------+
+|                    |   ARMA   |   USAR   |
+|      ANDAR         +----------+----------+
+|  (alavanca: onde   |                     |
+|   o dedo encostar  |       ATIRAR        |
+|   vira o centro)   |  (arrastar = mirar) |
++--------------------+---------------------+
+```
+- **ANDAR**: arraste para frente/trás e para os lados (vira). Arrastando bastante, corre.
+- **ATIRAR**: segurar atira; arrastar o dedo para os lados gira a mira.
+- **USAR** abre portas e aperta botões. **ARMA** troca para a próxima arma.
+- **No menu**: a alavanca move a seleção, o lado direito é OK (e "sim" nas perguntas),
+  MENU volta. Ao salvar, o save já recebe o nome do mapa (não há teclado).
+- "Sair do jogo" reinicia a placa.
+
+Ajustes em `freedoom/src/config_placa.h`: `ROTACAO_TELA` (1 ou 3, qual lado fica para
+cima), `MOSTRAR_BOTOES`, `SOM_GANHO`, `TOQUE_MAX_PONTOS`.
+
+### Estado (14/11/2026)
+- **Firmware próprio**: imagem certa, toque funciona, episódio 1 roda da flash. O cartão não
+  respondeu nele (provavelmente travado por um reset; ver a nota do microSD lá em cima).
+- **Launcher**: o jogo abre do cartão com o `freedoom1.wad` completo. Carregar leva uns 15 s
+  (as texturas são lidas do cartão aos poucos); a tela mostra "Carregando... (etapa)".
+- **Ainda não conferido**: som (o alto-falante não estava ligado), se o painel informa o
+  segundo dedo (andar e atirar juntos), velocidade em quadros por segundo.
+- Textos do jogo ficam os do Doom original em inglês (o DEHACKED do Freedoom não é lido).
+
+### O que já deu errado (e como foi resolvido)
+- **RAM interna cheia no launcher** (`Not enough memory for buffer(transport)` e reinício em
+  ciclo): as globais do motor somam ~90 KB de `.bss`. Vão para a PSRAM pelo fragmento
+  `src/doom/freedoom.lf` do fork + `CONFIG_SPIRAM_ALLOW_BSS_SEG_EXTERNAL_MEMORY`.
+- **"O Doom precisa de 3 MB livres e só há 2815 KB"**: a PSRAM tinha ~5 MB livres, mas picados
+  (a fonte do cartão, telas do launcher). A zona do motor (`z_zone.c`) aceita vários pedaços:
+  o firmware entrega os extras por `DG_ZonaExtra`, separados por blocos "muro" que nunca se
+  juntam. Teste: `test/test_zona/`.
+- **`W_ReadLump: only read 1184 of 2792`**: uma leitura do cartão voltou pela metade. A leitura
+  do WAD tenta de novo até 5 vezes e avisa na serial (`W_Read: leitura incompleta...`).
+  Teste: `test/test_leitura/`. Se voltar a acontecer mesmo assim, desconfie do cartão.
+- **C23**: compiladores novos (GCC 14+) quebram o motor (`true`/`false` viraram palavras
+  reservadas, declaração implícita virou erro). Compilar o motor com `-std=gnu11`.
+
+### Testes (no PC)
+```
+pio test -e native    # no Deck: dentro do distrobox, ver "No Steam Deck"
+```
+`test_zona` (zona de memória em pedaços) e `test_leitura` (leitura do WAD com falha no meio).
 
 ## Protótipo antigo: contador Riftbound (`riftbound-contador/`)
 

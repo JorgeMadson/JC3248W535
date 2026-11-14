@@ -14,7 +14,7 @@ Detalhes de chip, tela e pinos no [README](README.md).
 | Tela + toque | ✅ | Usados no `placar-mesa/` |
 | Alto-falante (P6) | ✅ | I2S BCLK=42, LRCLK=2, DATA=41. Pinos confirmados com um firmware de teste de tons; o sistema de fábrica tocou música do SD |
 | Bateria (P5) | ✅ | Carrega com USB e a placa roda só na bateria (passa do USB para a bateria sem reiniciar). GPIO5 lê a tensão da bateria (divisor 33k/100k, fator 1,33 **ainda não conferido com o multímetro**). **Sem bateria, com USB, o pino lê ~3,27 V cravado** (2457 mV, saída do carregador): a leitura de "3,27 V" anotada antes era isso. Firmware de carga com tela em `carregador/`. Ver [Bateria no P5](#bateria-no-p5) |
-| Cartão SD | ⚠️ | O sistema de fábrica tocou música do SD, então o slot funciona; os pinos (CS 10, MOSI 11, SCK 12, MISO 13) vêm do esquema e não foram testados no nosso código |
+| Cartão SD | ✅ | Pinos CS 10, MOSI 11, SCK 12, MISO 13 confirmados em 14/11/2026 (launcher, SDMMC 1 bit, cartão SDSC 512 MB). O cartão fica travado se um reset pega uma leitura no meio: tirar USB e bateria por uns segundos. Uma vez uma leitura voltou pela metade (Freedoom); o motor agora tenta de novo |
 | Rádios | ✅ | `esptool chip_id` responde `Features: WiFi, BLE`: **sem Bluetooth clássico**, então não vira caixa Bluetooth |
 | Conectores P2 / P3 / P4 | ❓ | Pinagem do esquema publicado ([done.land](https://done.land/components/microcontroller/families/esp/esp32/developmentboards/esp32-s3/guitionjc3248w535/)), não testada. Ver abaixo |
 | Cabos dos conectores | ❌ não tenho | Todos os conectores são JST 1,25 mm (P4 é 1,0 mm) |
