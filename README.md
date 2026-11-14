@@ -264,11 +264,15 @@ A placa fica deitada no meio da mesa; cada metade da tela é virada para um joga
   ("−7", some em 3 s), veneno (10 = derrota). Série melhor de três, igual ao Riftbound:
   vida em 0 ou 10 venenos encerra a partida e abre a tela de resultado (*Desfazer* volta
   ao valor de antes do toque fatal). A vida fica vermelha de 5 para baixo.
-- **Visual**: cada painel é um cartão com a cor do jogador; botões + e − desenhados em
-  barras; barra de segmentos com os pontos do Riftbound; barra do tempo que resta sob o
-  cronômetro (vermelha nos últimos 10%); o botão tocado ganha um contorno por um instante.
+- **Visual "Holofote"** (14/11/2026, inspirado em contadores de vida como Lifetap e
+  Mutility): fundo preto, um cartão escuro por jogador com um brilho redondo na cor dele
+  atrás do número (que fica na cor clara do jogador); só um − e um + discretos nas bordas
+  (tocar na metade esquerda tira, na direita soma); pontos do Riftbound em barrinhas,
+  douradas no "quase lá"; tempo numa pílula fina no meio da mesa; opções numa folha que
+  sobe da borda de quem tocou. Prévias: `placar-mesa/prototipo/visual-placar.html`.
+  Sem nada novo no Pintor: os tons intermediários saem de `misturar()` (`tema.h`).
 - **Comum**: cronômetro na faixa do meio (toque inicia/pausa; depois de zerar conta o
-  acréscimo); botão **≡** em cada painel abre as opções (zerar, voltar ao menu...),
+  acréscimo); botão **•••** em cada painel abre as opções (zerar, voltar ao menu...),
   sempre com confirmação e virado para quem tocou.
 - Regras ajustáveis em `lib/nucleo/config_jogos.h` (pontos, vida, tempo da rodada = 50 min).
 - `DEBUG_TOQUE 1` em `src/hal/config_placa.h` mostra uma bolinha onde a placa sentiu o toque.

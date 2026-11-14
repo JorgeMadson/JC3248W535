@@ -11,13 +11,13 @@ namespace placar {
 namespace {
 constexpr const char* CHAVE_ULTIMO = "ultimo_jogo";
 constexpr int16_t METADE = ALTURA_TELA / 2;
-constexpr int16_t TITULO_Y = METADE + 28;
-constexpr int16_t BOTOES_Y = METADE + 56;
+constexpr int16_t TITULO_Y = METADE + 34;
+constexpr int16_t BOTOES_Y = METADE + 54;
 constexpr int16_t BOTOES_H = ALTURA_TELA - BOTOES_Y - 12;
 constexpr int16_t ESPACO = 10;
-constexpr int16_t MARGEM = 16;
-// Botão "Sair" sobre a divisória do meio (coordenadas de tela, só se ctx.sair).
-constexpr Retangulo BOTAO_SAIR = {LARGURA_TELA / 2 - 44, METADE - 18, 88, 36};
+constexpr int16_t MARGEM = 12;
+// Botão "Sair" no meio da mesa (coordenadas de tela, só se ctx.sair).
+constexpr Retangulo BOTAO_SAIR = {LARGURA_TELA / 2 - 40, METADE - 16, 80, 32};
 }  // namespace
 
 TelaMenu::TelaMenu(Contexto& ctx) : ctx_(ctx) {
@@ -54,28 +54,32 @@ void TelaMenu::aoEvento(const Evento& e) {
 void TelaMenu::desenhar(Pintor& p) {
   p.orientar(Lado::Baixo);
   p.limpar(cor::FUNDO);
-  p.linhaH(24, METADE, LARGURA_TELA - 48, cor::DIVISORIA);
 
   const auto& jogos = jogosRegistrados();
   for (int l = 0; l < 2; l++) {
     p.orientar(ladoDoIndice(l));
-    p.texto("Escolha o jogo", LARGURA_TELA / 2, TITULO_Y, Fonte::Texto, cor::APAGADO);
+    p.texto("ESCOLHA O JOGO", LARGURA_TELA / 2, TITULO_Y, Fonte::Legenda, cor::APAGADO);
     for (size_t i = 0; i < jogos.size(); i++) {
       Retangulo r = areaBotao(i);
-      p.arredondado(r, 16, jogos[i].cor);
-      if (int(i) == ultimo_) p.contornoArredondado(r.recuado(-3), 18, cor::OURO);
+      bool ultimo = int(i) == ultimo_;
+      p.arredondado(r, 22, cor::CARTAO);
+      // Monograma com brilho na cor do jogo
+      Ponto m{int16_t(r.x + 46), r.centroY()};
+      for (int k = 0; k < 6; k++) p.circulo(m, int16_t(34 - k * 5), misturar(cor::CARTAO, jogos[i].cor, 20 + k * 31));
+      char letra[2] = {jogos[i].nome[0], 0};
+      p.texto(letra, m.x, m.y, Fonte::Texto, cor::TEXTO);
+      p.contornoArredondado(r, 22, ultimo ? cor::OURO : cor::DIVISORIA);
+      if (ultimo) p.contornoArredondado(r.recuado(1), 21, cor::OURO);
       bool temEspaco = r.h >= 70;
-      int16_t xTexto = r.x + 22;
+      int16_t xTexto = r.x + 92;
       p.texto(jogos[i].nome, xTexto, r.centroY() - (temEspaco ? 12 : 0), Fonte::Titulo, cor::TEXTO, Alinhamento::Esquerda);
-      if (temEspaco) p.texto(jogos[i].subtitulo, xTexto, r.centroY() + 24, Fonte::Legenda, cor::TEXTO, Alinhamento::Esquerda);
-      // seta "entrar" à direita
-      int16_t sx = r.direita() - 30, sy = r.centroY();
-      p.triangulo({sx, int16_t(sy - 12)}, {sx, int16_t(sy + 12)}, {int16_t(sx + 14), sy}, cor::TEXTO);
+      if (temEspaco) p.texto(jogos[i].subtitulo, xTexto, r.centroY() + 20, Fonte::Legenda, cor::SUAVE, Alinhamento::Esquerda);
     }
   }
   p.orientar(Lado::Baixo);
   if (ctx_.sair) {
-    p.arredondado(BOTAO_SAIR, 18, cor::BOTAO_NEUTRO);
+    p.arredondado(BOTAO_SAIR, BOTAO_SAIR.h / 2, cor::BOTAO_NEUTRO);
+    p.contornoArredondado(BOTAO_SAIR, BOTAO_SAIR.h / 2, cor::DIVISORIA);
     p.texto("Sair", BOTAO_SAIR.centroX(), BOTAO_SAIR.centroY(), Fonte::Legenda, cor::TEXTO);
   }
 }

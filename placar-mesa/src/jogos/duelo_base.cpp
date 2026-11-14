@@ -48,8 +48,6 @@ void DueloBase::desenhar(Pintor& p) {
   uint32_t agora = ctx_.relogio.agoraMs();
   p.orientar(Lado::Baixo);
   p.limpar(cor::FUNDO);
-  p.retangulo(layout::FAIXA_MEIO, cor::FAIXA_MEIO);
-  p.linhaV(LARGURA_TELA / 2, layout::FAIXA_MEIO.y + 8, layout::FAIXA_MEIO.h - 16, cor::DIVISORIA);
 
   for (int l = 0; l < 2; l++) {
     Lado lado = ladoDoIndice(l);

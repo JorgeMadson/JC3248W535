@@ -11,10 +11,11 @@ namespace placar {
 using Estado = RiftboundRegras::Estado;
 
 namespace {
-// Linha de baixo, durante a partida: barra com os pontos feitos (um segmento por ponto)
-constexpr Retangulo BARRA_PONTOS{16, layout::PAINEL_Y + 170, 226, 14};
-// Linha de cima: vitórias da série, à direita
-constexpr Ponto BOLINHAS_TOPO{LARGURA_TELA - 52, layout::PAINEL_Y + 26};
+// Linha de baixo, durante a partida: barrinhas com os pontos feitos (uma por ponto)
+constexpr Retangulo BARRA_PONTOS{LARGURA_TELA / 2 - 98, layout::CARTAO.y + layout::CARTAO.h - 32, 196, 8};
+// Linha de cima: nome à esquerda, vitórias da série à direita
+constexpr Ponto NOME{layout::CARTAO.x + 20, layout::CARTAO.y + 24};
+constexpr Ponto BOLINHAS_TOPO{layout::CARTAO.x + layout::CARTAO.w - 46, layout::CARTAO.y + 24};
 }  // namespace
 
 TelaRiftbound::TelaRiftbound(Contexto& ctx, ConfigRiftbound cfg) : DueloBase(ctx, cfg.tempoRodadaS), regras_(cfg) {}
@@ -36,33 +37,30 @@ void TelaRiftbound::desenharPainel(Pintor& p, Lado lado, uint32_t) {
 void TelaRiftbound::desenharEmJogo(Pintor& p, int j) {
   const CoresJogador& c = CORES_JOGADOR[j];
   const auto& cfg = regras_.config();
-  desenharCartao(p, c.escuro, c.forte);
+  bool quaseLa = regras_.pontos(j) == cfg.pontosVitoria - 1;
 
-  // Linha de cima: quem é o jogador e como está a série
-  desenharEtiqueta(p, c.nome, 16, layout::PAINEL_Y + 26, c.forte, cor::TEXTO);
-  p.texto("Série", BOLINHAS_TOPO.x - 18, BOLINHAS_TOPO.y, Fonte::Legenda, cor::APAGADO, Alinhamento::Direita);
+  desenharCartao(p, c.escuro);
+  desenharBrilho(p, layout::CENTRO_NUMERO, layout::RAIO_BRILHO, c.forte);
+
+  p.texto(c.nome, NOME.x, NOME.y, Fonte::Legenda, c.claro, Alinhamento::Esquerda);
   desenharBolinhas(p, BOLINHAS_TOPO, regras_.vitorias(j), cfg.partidasParaSerie, cor::OURO);
 
   // Centro: - pontos +
-  desenharBotaoSinal(p, layout::BOTAO_MENOS, false, c.forte);
-  desenharBotaoSinal(p, layout::BOTAO_MAIS, true, c.forte);
-  Ponto centro{int16_t(LARGURA_TELA / 2), layout::AREA_CENTRAL.centroY()};
-  bool quaseLa = regras_.pontos(j) == cfg.pontosVitoria - 1;
-  desenharPlacar(p, regras_.pontos(j), centro, layout::LARGURA_PLACAR, quaseLa ? cor::OURO : cor::TEXTO);
+  desenharSinal(p, {layout::BOTAO_MENOS.centroX(), layout::CENTRO_NUMERO.y}, false, cor::APAGADO);
+  desenharSinal(p, {layout::BOTAO_MAIS.centroX(), layout::CENTRO_NUMERO.y}, true, cor::APAGADO);
+  desenharPlacar(p, regras_.pontos(j), layout::CENTRO_NUMERO, layout::LARGURA_PLACAR, quaseLa ? cor::OURO : c.claro);
 
-  // Linha de baixo: quanto falta para vencer
-  desenharSegmentos(p, BARRA_PONTOS, regras_.pontos(j), cfg.pontosVitoria, quaseLa ? cor::OURO : c.claro, cor::FUNDO);
+  // Embaixo: quanto falta para vencer
+  desenharSegmentos(p, BARRA_PONTOS, regras_.pontos(j), cfg.pontosVitoria, quaseLa ? cor::OURO : c.claro, cor::VAZIO);
 }
 
 void TelaRiftbound::desenharResultado(Pintor& p, int j) {
   bool serie = regras_.estado() == Estado::SerieEncerrada;
   char buf[40];
-  snprintf(buf, sizeof(buf), "Pontos %d-%d  ·  Série %d-%d", regras_.pontos(j), regras_.pontos(1 - j), regras_.vitorias(j),
+  snprintf(buf, sizeof(buf), "%d a %d  ·  série %d a %d", regras_.pontos(j), regras_.pontos(1 - j), regras_.vitorias(j),
            regras_.vitorias(1 - j));
-  placar::desenharResultado(p, regras_.vencedor() == j, serie, buf);
-
-  desenharBolinhas(p, layout::BOLINHAS, regras_.vitorias(j), regras_.config().partidasParaSerie, cor::OURO);
-  p.texto(CORES_JOGADOR[j].nome, LARGURA_TELA / 2, layout::BOLINHAS.y, Fonte::Texto, cor::APAGADO);
+  placar::desenharResultado(p, regras_.vencedor() == j, serie, buf, regras_.vitorias(j),
+                            regras_.config().partidasParaSerie);
 }
 
 // ---------- Toques ----------

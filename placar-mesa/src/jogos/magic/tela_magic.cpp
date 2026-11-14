@@ -13,15 +13,18 @@ using Estado = MagicRegras::Estado;
 namespace {
 constexpr const char* CHAVE_VIDA = "mtg_vida";
 
-// Linha de cima: -5 / variação / +5
-constexpr Retangulo BOTAO_MENOS5{12, layout::PAINEL_Y + 10, 72, 34};
-constexpr Retangulo BOTAO_MAIS5{LARGURA_TELA - 84, layout::PAINEL_Y + 10, 72, 34};
-// Entre os dois, quando não há variação para mostrar: vitórias da série
-constexpr Ponto BOLINHAS_TOPO{LARGURA_TELA / 2 - 12, layout::PAINEL_Y + 27};
+// Linha de cima: -5 e +5 (pílulas vazadas); a variação recente aparece acima do número
+constexpr Retangulo BOTAO_MENOS5{108, layout::CARTAO.y + 9, 54, 30};
+constexpr Retangulo BOTAO_MAIS5{170, layout::CARTAO.y + 9, 54, 30};
+constexpr Ponto VARIACAO{LARGURA_TELA / 2, layout::CENTRO_NUMERO.y - 56};  // entre as pílulas e o número
+// Linha de cima: nome à esquerda, vitórias da série à direita.
+constexpr Ponto BOLINHAS_TOPO{layout::CARTAO.x + layout::CARTAO.w - 46, layout::CARTAO.y + 24};
+constexpr Ponto NOME{layout::CARTAO.x + 20, layout::CARTAO.y + 24};
 // Linha de baixo: veneno - / +
-constexpr Retangulo VENENO_MENOS{12, layout::PAINEL_Y + 158, 44, 38};
-constexpr Retangulo VENENO_MAIS{196, layout::PAINEL_Y + 158, 44, 38};
-constexpr int16_t VENENO_TEXTO_X = (VENENO_MENOS.x + VENENO_MENOS.w + VENENO_MAIS.x) / 2;
+constexpr int16_t VENENO_Y = layout::CARTAO.y + layout::CARTAO.h - 26;
+constexpr Retangulo VENENO_MENOS{LARGURA_TELA / 2 - 84, VENENO_Y - 18, 48, 36};
+constexpr Retangulo VENENO_MAIS{LARGURA_TELA / 2 + 36, VENENO_Y - 18, 48, 36};
+constexpr int16_t VENENO_TEXTO_X = LARGURA_TELA / 2;
 constexpr int VIDA_BAIXA = 5;  // daqui para baixo a vida aparece em vermelho
 
 std::string formatar(const char* fmt, int v) {
@@ -49,41 +52,42 @@ void TelaMagic::desenharPainel(Pintor& p, Lado lado, uint32_t agora) {
     variacaoDesenhada_[j] = false;
     bool serie = regras_.estado() == Estado::SerieEncerrada;
     char buf[48];
-    snprintf(buf, sizeof(buf), "Vida %d-%d  ·  Série %d-%d", regras_.vida(j), regras_.vida(1 - j), regras_.vitorias(j),
+    snprintf(buf, sizeof(buf), "vida %d a %d  ·  série %d a %d", regras_.vida(j), regras_.vida(1 - j), regras_.vitorias(j),
              regras_.vitorias(1 - j));
-    desenharResultado(p, regras_.vencedor() == j, serie, buf);
-    desenharBolinhas(p, layout::BOLINHAS, regras_.vitorias(j), cfg.partidasParaSerie, cor::OURO);
-    p.texto(c.nome, LARGURA_TELA / 2, layout::BOLINHAS.y, Fonte::Texto, cor::APAGADO);
+    desenharResultado(p, regras_.vencedor() == j, serie, buf, regras_.vitorias(j), cfg.partidasParaSerie);
     return;
   }
 
-  desenharCartao(p, c.escuro, c.forte);
+  desenharCartao(p, c.escuro);
+  desenharBrilho(p, layout::CENTRO_NUMERO, layout::RAIO_BRILHO, c.forte);
 
-  // Linha de cima: botões de 5 e, no meio, a variação recente ou a série
-  Botao{BOTAO_MENOS5, "-5", c.forte}.desenhar(p);
-  Botao{BOTAO_MAIS5, "+5", c.forte}.desenhar(p);
+  // Em cima: nome, -5 e +5, série
+  p.texto(c.nome, NOME.x, NOME.y, Fonte::Legenda, c.claro, Alinhamento::Esquerda);
+  p.contornoArredondado(BOTAO_MENOS5, BOTAO_MENOS5.h / 2, cor::DIVISORIA);
+  p.texto("-5", BOTAO_MENOS5.centroX(), BOTAO_MENOS5.centroY(), Fonte::Legenda, cor::SUAVE);
+  p.contornoArredondado(BOTAO_MAIS5, BOTAO_MAIS5.h / 2, cor::DIVISORIA);
+  p.texto("+5", BOTAO_MAIS5.centroX(), BOTAO_MAIS5.centroY(), Fonte::Legenda, cor::SUAVE);
+  desenharBolinhas(p, BOLINHAS_TOPO, regras_.vitorias(j), cfg.partidasParaSerie, cor::OURO);
+
+  // Centro: - vida +, com a variação recente logo acima
+  desenharSinal(p, {layout::BOTAO_MENOS.centroX(), layout::CENTRO_NUMERO.y}, false, cor::APAGADO);
+  desenharSinal(p, {layout::BOTAO_MAIS.centroX(), layout::CENTRO_NUMERO.y}, true, cor::APAGADO);
+  desenharPlacar(p, regras_.vida(j), layout::CENTRO_NUMERO, layout::LARGURA_PLACAR,
+                 regras_.vida(j) <= VIDA_BAIXA ? cor::ALERTA : c.claro);
   int var = regras_.variacaoVisivel(j, agora);
   variacaoDesenhada_[j] = var != 0;
   if (var != 0) {
     char buf[8];
     snprintf(buf, sizeof(buf), "%+d", var);
-    p.texto(buf, LARGURA_TELA / 2, BOLINHAS_TOPO.y, Fonte::Titulo, var < 0 ? cor::ALERTA : cor::POSITIVO);
-  } else {
-    desenharBolinhas(p, BOLINHAS_TOPO, regras_.vitorias(j), cfg.partidasParaSerie, cor::OURO);
+    p.texto(buf, VARIACAO.x, VARIACAO.y, Fonte::Legenda, var < 0 ? cor::ALERTA : cor::POSITIVO);
   }
 
-  // Centro: - vida +
-  desenharBotaoSinal(p, layout::BOTAO_MENOS, false, c.forte);
-  desenharBotaoSinal(p, layout::BOTAO_MAIS, true, c.forte);
-  Ponto centro{int16_t(LARGURA_TELA / 2), layout::AREA_CENTRAL.centroY()};
-  desenharPlacar(p, regras_.vida(j), centro, layout::LARGURA_PLACAR, regras_.vida(j) <= VIDA_BAIXA ? cor::ALERTA : cor::TEXTO);
-
-  // Linha de baixo: veneno
+  // Embaixo: veneno
   int veneno = regras_.veneno(j);
   uint16_t corVeneno = veneno >= cfg.venenoParaPerder - 2 ? cor::ALERTA : (veneno > 0 ? cor::VENENO : cor::APAGADO);
-  desenharBotaoSinal(p, VENENO_MENOS, false, cor::BOTAO_NEUTRO);
-  desenharBotaoSinal(p, VENENO_MAIS, true, cor::BOTAO_NEUTRO);
-  p.texto(formatar("Veneno %d", veneno).c_str(), VENENO_TEXTO_X, VENENO_MENOS.centroY(), Fonte::Texto, corVeneno);
+  desenharSinal(p, {VENENO_MENOS.centroX(), VENENO_Y}, false, corVeneno, 12, 2);
+  desenharSinal(p, {VENENO_MAIS.centroX(), VENENO_Y}, true, corVeneno, 12, 2);
+  p.texto(formatar("veneno %d", veneno).c_str(), VENENO_TEXTO_X, VENENO_Y, Fonte::Legenda, corVeneno);
 }
 
 bool TelaMagic::atualizarJogo(uint32_t agora) {

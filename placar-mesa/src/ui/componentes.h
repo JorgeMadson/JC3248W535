@@ -1,12 +1,12 @@
 #pragma once
-// Componentes visuais reutilizáveis, sem regra de jogo.
+// Componentes visuais reutilizáveis, sem regra de jogo (visual "Holofote", ver tema.h).
 
 #include "cronometro.h"
 #include "pintor.h"
 
 namespace placar {
 
-// Botão retangular arredondado com rótulo centralizado.
+// Botão em pílula com rótulo centralizado.
 struct Botao {
   Retangulo area;
   const char* rotulo = "";
@@ -21,32 +21,32 @@ struct Botao {
 // Número grande centralizado; troca para uma fonte menor se não couber.
 void desenharPlacar(Pintor& p, int valor, Ponto centro, int16_t larguraMax, uint16_t cor);
 
-// Cronômetro com ícone de play/pause e dica, dentro de "area".
+// Tempo numa pílula (layout::TEMPO): ícone de play/pause, mm:ss e uma barrinha do que resta.
 void desenharCronometro(Pintor& p, const Cronometro& c, uint32_t agoraMs, Retangulo area);
 
-// Ícone "≡" (três barras) do botão de opções.
+// "•••" do botão de opções.
 void desenharIconeOpcoes(Pintor& p, Retangulo area, uint16_t cor);
 
-// Fundo do painel de um jogador: cartão arredondado com contorno.
-void desenharCartao(Pintor& p, uint16_t fundo, uint16_t contorno);
+// Cartão do jogador (layout::CARTAO): fundo escuro e contorno fino.
+void desenharCartao(Pintor& p, uint16_t contorno, uint8_t grossura = 1);
 
-// Botão "+" ou "-" com o sinal desenhado em barras grossas (mais nítido que a fonte).
-void desenharBotaoSinal(Pintor& p, Retangulo area, bool mais, uint16_t cor, uint16_t corSinal = cor::TEXTO);
+// Brilho redondo atrás do número: círculos do fundo do cartão até um tom escuro de "cor".
+void desenharBrilho(Pintor& p, Ponto centro, int16_t raio, uint16_t cor);
 
-// Barra de progresso em segmentos (ex.: pontos feitos de 8).
+// Sinal "-" ou "+" desenhado em barras finas (mais nítido que a fonte).
+void desenharSinal(Pintor& p, Ponto centro, bool mais, uint16_t cor, int16_t lado = 20, int16_t grossura = 3);
+
+// Barra de progresso em segmentos arredondados (ex.: pontos feitos de 8).
 void desenharSegmentos(Pintor& p, Retangulo area, int cheios, int total, uint16_t corCheio, uint16_t corVazio);
 
-// Nome do jogador numa etiqueta arredondada. "x" é a borda esquerda.
-void desenharEtiqueta(Pintor& p, const char* texto, int16_t x, int16_t yCentro, uint16_t fundo, uint16_t corTexto);
-
 // Painel de fim de partida/série: título, detalhe e os botões Desfazer / seguir
-// (áreas em layout_duelo.h). Não desenha a linha de baixo.
-void desenharResultado(Pintor& p, bool venceu, bool serie, const char* detalhe);
+// (áreas em layout_duelo.h), mais as bolinhas da série.
+void desenharResultado(Pintor& p, bool venceu, bool serie, const char* detalhe, int vitorias, int totalSerie);
 
-// Contorno claro em volta de um botão que acabou de ser tocado.
+// Retorno visual de um toque: contorno claro em volta da área por um instante.
 void desenharDestaque(Pintor& p, Retangulo area);
 
-// Bolinhas de vitórias da série (cheias = vencidas).
+// Bolinhas de vitórias da série (cheias = vencidas). "inicio" = centro da primeira.
 void desenharBolinhas(Pintor& p, Ponto inicio, int vencidas, int total, uint16_t cor);
 
 }  // namespace placar
