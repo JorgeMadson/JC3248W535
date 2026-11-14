@@ -1,6 +1,9 @@
 # PlatformIO (a compilação vai para C:/Users/filho/.rb/, mas por garantia)
 .pio/
 .pioenvs/
+# No Linux (Steam Deck) o build_dir do placar-mesa, que é um caminho do Windows
+# (C:/Users/...), vira uma pasta "C:" dentro do projeto
+placar-mesa/C:/
 .piolibdeps/
 
 # Editores / sistema
