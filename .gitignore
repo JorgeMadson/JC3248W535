@@ -19,3 +19,7 @@ _site_local/
 
 # STL gerados a partir dos .scad (case-3d/)
 case-3d/stl/
+
+# Freedoom: WAD gerado e download em cache (ferramentas/montar_wad.py)
+freedoom/wad/
+freedoom/.cache/

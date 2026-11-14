@@ -1,0 +1,11 @@
+# Flash de 16 MB da JC3248W535 para o Freedoom.
+# `wad` guarda o episódio 1 (ferramentas/montar_wad.py), lido direto da flash.
+# `saves` é LittleFS: jogos salvos quando não há cartão microSD.
+# Se mudar o tamanho de `wad`, mude TAMANHO_PARTICAO em ferramentas/montar_wad.py
+# e o endereço em scripts/gravar_wad.py.
+# Nome,   Tipo, Subtipo, Início,   Tamanho
+nvs,      data, nvs,     0x9000,   0x5000,
+otadata,  data, ota,     0xe000,   0x2000,
+app0,     app,  ota_0,   0x10000,  0x200000,
+saves,    data, spiffs,  0x210000, 0x100000,
+wad,      data, 0x40,    0x310000, 0xCF0000,

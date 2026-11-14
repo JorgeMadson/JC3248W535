@@ -1,0 +1,9 @@
+{
+  "name": "doomgeneric",
+  "version": "0.0.0+e257a09",
+  "description": "Motor do Doom (github.com/ozkl/doomgeneric, commit e257a09), com ajustes marcados [JC3248W535]",
+  "license": "GPL-2.0-or-later",
+  "build": {
+    "flags": ["-std=gnu11", "-w", "-O2", "-DFEATURE_SOUND"]
+  }
+}
