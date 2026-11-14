@@ -34,11 +34,12 @@ struct CoresJogador {
   const char* nome;
   uint16_t forte;   // botões, destaques
   uint16_t escuro;  // fundo do painel
+  uint16_t claro;   // contorno do painel, barras de progresso
 };
 
 constexpr CoresJogador CORES_JOGADOR[2] = {
-    {"AZUL", rgb(30, 120, 220), rgb(12, 40, 80)},
-    {"VERMELHO", rgb(220, 60, 60), rgb(80, 18, 22)},
+    {"AZUL", rgb(30, 120, 220), rgb(12, 40, 80), rgb(110, 175, 245)},
+    {"VERMELHO", rgb(220, 60, 60), rgb(80, 18, 22), rgb(245, 135, 130)},
 };
 
 // Tipografia: uma única família (Logisoso, lisa e condensada) em tamanhos fixos.

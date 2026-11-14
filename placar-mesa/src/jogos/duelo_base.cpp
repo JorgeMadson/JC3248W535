@@ -8,6 +8,10 @@
 
 namespace placar {
 
+namespace {
+constexpr uint32_t DESTAQUE_MS = 140;
+}
+
 DueloBase::DueloBase(Contexto& ctx, uint32_t tempoRodadaS) : ctx_(ctx), cronometro_(tempoRodadaS) {}
 
 void DueloBase::aoEvento(const Evento& e) {
@@ -33,6 +37,10 @@ void DueloBase::atualizar(uint32_t agora) {
     ultimoSegundo_ = seg;
     marcarSuja();
   }
+  if (destaqueAtivo_ && agora - destaqueInicioMs_ >= DESTAQUE_MS) {
+    destaqueAtivo_ = false;
+    marcarSuja();
+  }
   if (atualizarJogo(agora)) marcarSuja();
 }
 
@@ -47,10 +55,19 @@ void DueloBase::desenhar(Pintor& p) {
     Lado lado = ladoDoIndice(l);
     p.orientar(lado);
     desenharPainel(p, lado, agora);
+    if (destaqueAtivo_ && destaqueLado_ == lado) desenharDestaque(p, destaqueArea_);
     desenharIconeOpcoes(p, layout::BOTAO_OPCOES, cor::APAGADO);
     desenharCronometro(p, cronometro_, agora, layout::TEMPO);
   }
   p.orientar(Lado::Baixo);
+}
+
+void DueloBase::destacar(Lado lado, Retangulo area, uint32_t agora) {
+  destaqueAtivo_ = true;
+  destaqueLado_ = lado;
+  destaqueArea_ = area;
+  destaqueInicioMs_ = agora;
+  marcarSuja();
 }
 
 void DueloBase::abrirDialogo(Lado lado, std::string titulo, std::vector<ItemOpcao> itens) {

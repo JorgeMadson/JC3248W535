@@ -10,7 +10,7 @@ namespace placar {
 const std::vector<EntradaJogo>& jogosRegistrados() {
   static const std::vector<EntradaJogo> jogos = {
       {"Riftbound", "1x1 · melhor de 3", cor::RIFTBOUND, "rift", criar<TelaRiftbound>},
-      {"Magic", "The Gathering · vida", cor::MAGIC, "mtg", criar<TelaMagic>},
+      {"Magic", "vida · melhor de 3", cor::MAGIC, "mtg", criar<TelaMagic>},
   };
   return jogos;
 }

@@ -65,8 +65,12 @@ void TelaMenu::desenhar(Pintor& p) {
       p.arredondado(r, 16, jogos[i].cor);
       if (int(i) == ultimo_) p.contornoArredondado(r.recuado(-3), 18, cor::OURO);
       bool temEspaco = r.h >= 70;
-      p.texto(jogos[i].nome, r.centroX(), r.centroY() - (temEspaco ? 12 : 0), Fonte::Titulo, cor::TEXTO);
-      if (temEspaco) p.texto(jogos[i].subtitulo, r.centroX(), r.centroY() + 24, Fonte::Legenda, cor::TEXTO);
+      int16_t xTexto = r.x + 22;
+      p.texto(jogos[i].nome, xTexto, r.centroY() - (temEspaco ? 12 : 0), Fonte::Titulo, cor::TEXTO, Alinhamento::Esquerda);
+      if (temEspaco) p.texto(jogos[i].subtitulo, xTexto, r.centroY() + 24, Fonte::Legenda, cor::TEXTO, Alinhamento::Esquerda);
+      // seta "entrar" à direita
+      int16_t sx = r.direita() - 30, sy = r.centroY();
+      p.triangulo({sx, int16_t(sy - 12)}, {sx, int16_t(sy + 12)}, {int16_t(sx + 14), sy}, cor::TEXTO);
     }
   }
   p.orientar(Lado::Baixo);

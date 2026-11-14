@@ -35,6 +35,9 @@ class DueloBase : public Tela {
   // Chamado a cada ciclo; devolve true se precisa redesenhar.
   virtual bool atualizarJogo(uint32_t /*agoraMs*/) { return false; }
 
+  // Retorno visual do toque: contorna "area" (coordenadas do jogador) por um instante.
+  void destacar(Lado lado, Retangulo area, uint32_t agoraMs);
+
   // Abre um diálogo de opções/confirmação virado para "lado".
   void abrirDialogo(Lado lado, std::string titulo, std::vector<ItemOpcao> itens);
 
@@ -45,6 +48,11 @@ class DueloBase : public Tela {
   void abrirOpcoes(Lado lado);
 
   uint32_t ultimoSegundo_ = UINT32_MAX;
+
+  bool destaqueAtivo_ = false;
+  Lado destaqueLado_ = Lado::Baixo;
+  Retangulo destaqueArea_;
+  uint32_t destaqueInicioMs_ = 0;
 };
 
 }  // namespace placar

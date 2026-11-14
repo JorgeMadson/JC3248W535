@@ -1,5 +1,6 @@
 #pragma once
-// Magic: The Gathering: vida (20/30/40), variação recente, veneno, cronômetro.
+// Magic: The Gathering: vida (20/30/40), variação recente, veneno, série melhor
+// de três, cronômetro.
 
 #include "config_jogos.h"
 #include "duelo_base.h"
@@ -19,6 +20,7 @@ class TelaMagic : public DueloBase {
 
  private:
   void abrirVidaInicial(Lado lado);
+  void novaSerie();
 
   MagicRegras regras_;
   bool variacaoDesenhada_[2] = {false, false};  // para saber quando o "-7" sumiu
