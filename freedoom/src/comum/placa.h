@@ -27,7 +27,7 @@ void placa_console_fim(void);
 void placa_tela_erro(const char *titulo, const char *msg);
 
 // Lê os dedos na tela, já em coordenadas da tela deitada (0..479, 0..319).
-// (o desenho dos botões em placa_desenhar_botoes usa as mesmas áreas de entrada.c)
+// (o desenho dos botões em placa_desenhar_botoes usa as mesmas áreas de controles.c)
 // Devolve quantos (0 a 2).
 int placa_ler_toques(int16_t x[2], int16_t y[2]);
 

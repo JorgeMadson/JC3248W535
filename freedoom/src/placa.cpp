@@ -44,7 +44,7 @@ static void rotulo(int x, int y, const char *texto) {
 
 void placa_desenhar_botoes(int modo) {
 #if MOSTRAR_BOTOES
-  // Mesmas áreas de entrada.c
+  // Mesmas áreas de comum/controles.c
   tela->drawRoundRect(2, 2, 76, 60, 8, COR_BOTAO);
   rotulo(26, 28, "MENU");
   if (modo == 1) {
@@ -54,8 +54,8 @@ void placa_desenhar_botoes(int modo) {
     rotulo(289, 103, "ARMA");
     tela->drawRoundRect(362, 68, 116, 78, 8, COR_BOTAO);
     rotulo(408, 103, "USAR");
-    tela->drawRoundRect(244, 150, 234, 168, 8, COR_BOTAO);
-    rotulo(340, 230, "ATIRAR");
+    tela->drawRoundRect(350, 186, 120, 120, 8, COR_BOTAO);
+    rotulo(392, 242, "ATIRAR");
     tela->drawCircle(120, 200, 50, COR_BOTAO);
     rotulo(105, 196, "ANDAR");
   } else {

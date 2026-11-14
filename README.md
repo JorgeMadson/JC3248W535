@@ -349,16 +349,17 @@ placar-mesa, é só gravar o placar de novo (`pio run -t upload` lá).
 ```
 +------+----------------------------+------+
 | MENU |                            | MAPA |
-+------+-------------+-------+------+------+
-|                    |   ARMA   |   USAR   |
-|      ANDAR         +----------+----------+
++------+-------------+------+-------+------+
+|                    | ARMA |     USAR     |
+|      ANDAR         +------+--------------+
 |  (alavanca: onde   |                     |
-|   o dedo encostar  |       ATIRAR        |
-|   vira o centro)   |  (arrastar = mirar) |
+|   o dedo encostar  |        +----------+ |
+|   vira o centro)   |        |  ATIRAR  | |
+|                    |        +----------+ |
 +--------------------+---------------------+
 ```
 - **ANDAR**: arraste para frente/trás e para os lados (vira). Arrastando bastante, corre.
-- **ATIRAR**: segurar atira; arrastar o dedo para os lados gira a mira.
+- **ATIRAR**: segurar atira (só isso; girar é na alavanca). O espaço em volta não faz nada.
 - **USAR** abre portas e aperta botões. **ARMA** troca para a próxima arma.
 - **No menu**: a alavanca move a seleção, o lado direito é OK (e "sim" nas perguntas),
   MENU volta. Ao salvar, o save já recebe o nome do mapa (não há teclado).
@@ -372,11 +373,18 @@ cima), `MOSTRAR_BOTOES`, `SOM_GANHO`, `TOQUE_MAX_PONTOS`.
   respondeu nele (provavelmente travado por um reset; ver a nota do microSD lá em cima).
 - **Launcher**: o jogo abre do cartão com o `freedoom1.wad` completo. Carregar leva uns 15 s
   (as texturas são lidas do cartão aos poucos); a tela mostra "Carregando... (etapa)".
-- **Ainda não conferido**: som (o alto-falante não estava ligado), se o painel informa o
-  segundo dedo (andar e atirar juntos), velocidade em quadros por segundo.
+- **Toque**: o painel informa o segundo dedo (andar e atirar juntos funciona). Ele às vezes
+  diz "nenhum dedo" por até ~140 ms com o dedo encostado; os controles só soltam depois de
+  150 ms sem dedo (`SOLTAR_MS` em `comum/controles.c`, testado em `test/test_controles`).
+- **Ainda não conferido**: som (o alto-falante não estava ligado), velocidade em quadros por
+  segundo.
 - Textos do jogo ficam os do Doom original em inglês (o DEHACKED do Freedoom não é lido).
 
 ### O que já deu errado (e como foi resolvido)
+- **A alavanca de ANDAR não andava** (14/11/2026). O registro dos toques na serial mostrou
+  que o painel devolve "nenhum dedo" por 10 a 140 ms com o dedo encostado; a cada falha a
+  alavanca recentrava no dedo e o deslocamento voltava a zero (e ARMA trocava várias armas
+  num toque). Agora cada área só solta depois de 150 ms sem dedo.
 - **RAM interna cheia no launcher** (`Not enough memory for buffer(transport)` e reinício em
   ciclo): as globais do motor somam ~90 KB de `.bss`. Vão para a PSRAM pelo fragmento
   `src/doom/freedoom.lf` do fork + `CONFIG_SPIRAM_ALLOW_BSS_SEG_EXTERNAL_MEMORY`.
