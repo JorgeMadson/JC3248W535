@@ -17,6 +17,7 @@
 //
 
 #include <stdio.h>
+#include <string.h>
 
 #include "m_misc.h"
 #include "w_file.h"
@@ -67,18 +68,14 @@ static void W_StdC_CloseFile(wad_file_t *wad)
 // Read data from the specified position in the file into the 
 // provided buffer.  Returns the number of bytes read.
 
-size_t W_StdC_Read(wad_file_t *wad, unsigned int offset,
-                   void *buffer, size_t buffer_len)
+// [JC3248W535] Lê buffer_len bytes a partir de offset, tentando de novo se o
+// cartão falhar no meio (fread volta curto com erro); só o fim do arquivo
+// encerra sem erro.
+static size_t LerComTentativas(FILE *f, unsigned int offset, byte *buffer, size_t buffer_len)
 {
-    stdc_wad_file_t *stdc_wad;
     size_t result = 0;
     int tentativa;
 
-    stdc_wad = (stdc_wad_file_t *) wad;
-
-    // [JC3248W535] No launcher o WAD vem do cartão, que às vezes falha uma
-    // leitura no meio (fread volta curto com erro). Tenta de novo a partir de
-    // onde parou; só o fim do arquivo encerra sem erro.
     for (tentativa = 0; tentativa < 5 && result < buffer_len; tentativa++)
     {
         size_t lido;
@@ -87,26 +84,84 @@ size_t W_StdC_Read(wad_file_t *wad, unsigned int offset,
         {
             printf("W_Read: leitura incompleta em %u (%u de %u bytes), tentando de novo\n",
                    offset, (unsigned) result, (unsigned) buffer_len);
-            clearerr(stdc_wad->fstream);
+            clearerr(f);
             I_Sleep(20 * tentativa);
         }
 
-        // Jump to the specified position in the file.
-
-        fseek(stdc_wad->fstream, offset + result, SEEK_SET);
-
-        // Read into the buffer.
-
-        lido = fread((byte *) buffer + result, 1, buffer_len - result, stdc_wad->fstream);
+        fseek(f, offset + result, SEEK_SET);
+        lido = fread(buffer + result, 1, buffer_len - result, f);
         result += lido;
 
-        if (feof(stdc_wad->fstream))
+        if (feof(f))
         {
             break;  // pediu além do fim: não adianta tentar
         }
     }
 
     return result;
+}
+
+// [JC3248W535] Buffer de leitura da placa: RAM interna com DMA, reservada
+// quando o jogo abre. Ler do cartão direto num destino na PSRAM obriga o driver
+// a pegar um buffer de DMA na RAM interna na hora, e com ela esgotada a leitura
+// falha ("allocate_dma_buf: not enough mem"; no jogo, "W_ReadLump: only read
+// 1184 of 2792"). Sem buffer da placa (NULL), lê direto como antes.
+__attribute__((weak)) byte *DG_BufferLeitura(int *tamanho)
+{
+    *tamanho = 0;
+    return NULL;
+}
+
+#define SETOR 512
+
+size_t W_StdC_Read(wad_file_t *wad, unsigned int offset,
+                   void *buffer, size_t buffer_len)
+{
+    stdc_wad_file_t *stdc_wad = (stdc_wad_file_t *) wad;
+    byte *destino = (byte *) buffer;
+    int tamanho = 0;
+    byte *dma = DG_BufferLeitura(&tamanho);
+    size_t feito = 0;
+
+    if (dma == NULL || tamanho < SETOR)
+    {
+        return LerComTentativas(stdc_wad->fstream, offset, destino, buffer_len);
+    }
+    tamanho -= tamanho % SETOR;
+
+    // Em pedaços que começam no início de um setor: assim o cartão lê os
+    // setores inteiros direto no buffer (alinhado) e nada é alocado na hora.
+    while (feito < buffer_len)
+    {
+        unsigned int pos = offset + feito;
+        unsigned int inicio = pos - pos % SETOR;
+        size_t pular = pos - inicio;
+        size_t quer = pular + (buffer_len - feito);
+        size_t lido, util;
+
+        if (quer > (size_t) tamanho)
+        {
+            quer = tamanho;
+        }
+        lido = LerComTentativas(stdc_wad->fstream, inicio, dma, quer);
+        if (lido <= pular)
+        {
+            break;
+        }
+        util = lido - pular;
+        if (util > buffer_len - feito)
+        {
+            util = buffer_len - feito;
+        }
+        memcpy(destino + feito, dma + pular, util);
+        feito += util;
+        if (lido < quer)
+        {
+            break;  // fim do arquivo, ou uma falha que não passou
+        }
+    }
+
+    return feito;
 }
 
 

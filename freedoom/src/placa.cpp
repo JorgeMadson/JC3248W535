@@ -10,6 +10,7 @@
 #include <SPI.h>
 #include <Wire.h>
 #include <driver/i2s.h>
+#include <esp_heap_caps.h>
 #include <esp_partition.h>
 
 #include "config_placa.h"
@@ -181,9 +182,23 @@ const char *placa_caminho_wad(void) { return caminhoWad[0] ? caminhoWad : NULL; 
 // Chamado pelo motor (m_config.c).
 extern "C" const char *DG_PastaDados(void) { return pastaDados; }
 
+// Buffer de leitura do cartão na RAM interna com DMA, reservado no início (ver
+// DG_BufferLeitura em w_file_stdc.c): com o jogo rodando a RAM interna acaba e o
+// driver do cartão não consegue mais pegar um na hora.
+static uint8_t *bufferLeitura = nullptr;
+static int bufferLeituraTam = 0;
+extern "C" uint8_t *DG_BufferLeitura(int *tamanho) {
+  *tamanho = bufferLeituraTam;
+  return bufferLeitura;
+}
+
 // ---------------------------------------------------------------- início
 
 void placa_iniciar(void) {
+  for (int tam = 4096; tam >= 512 && !bufferLeitura; tam /= 2) {
+    bufferLeitura = (uint8_t *)heap_caps_aligned_alloc(4, tam, MALLOC_CAP_INTERNAL | MALLOC_CAP_DMA);
+    if (bufferLeitura) bufferLeituraTam = tam;
+  }
   pinMode(PINO_LCD_BL, OUTPUT);
   digitalWrite(PINO_LCD_BL, LOW);
 

@@ -1,0 +1,315 @@
+<title>Placar de Mesa: visual novo</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Inter:wght@400;600&display=swap">
+<style>
+/* Layout: duas propostas, cada uma uma faixa com as 6 telas em tamanho real de leitura (320x480 -> 216x324). */
+:root {
+  --bg: #08090d;
+  --painel: #12141c;
+  --linha: #252a38;
+  --texto: #eef0f6;
+  --apagado: #8a90a3;
+  --ouro: #f2c14e;
+  --fonte-titulo: "Oswald", "Arial Narrow", sans-serif;
+  --fonte-texto: "Inter", system-ui, sans-serif;
+  color-scheme: dark;
+}
+body { background: var(--bg); color: var(--texto); font-family: var(--fonte-texto); }
+main { max-width: 1240px; margin: 0 auto; padding-block: 28px 56px;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px));
+  display: grid; gap: 32px; }
+header { display: grid; gap: 10px; }
+h1 { font-family: var(--fonte-titulo); font-weight: 600; font-size: 2.1rem; letter-spacing: .01em; margin: 0; text-wrap: balance; }
+p { margin: 0; color: var(--apagado); line-height: 1.6; max-width: 72ch; }
+p b { color: var(--texto); font-weight: 600; }
+section { display: grid; gap: 16px; background: var(--painel); border: 1px solid var(--linha); border-radius: 16px; padding: 22px; min-width: 0; }
+section h2 { font-family: var(--fonte-titulo); font-weight: 600; font-size: 1.6rem; margin: 0; display: flex; gap: 12px; align-items: baseline; flex-wrap: wrap; }
+section h2 .letra { color: var(--ouro); }
+section h2 small { font-family: var(--fonte-texto); font-weight: 400; font-size: .9rem; color: var(--apagado); }
+.faixa { display: flex; gap: 14px; overflow-x: auto; padding-bottom: 8px; }
+figure { margin: 0; display: grid; gap: 6px; flex: none; }
+figcaption { font-size: .78rem; color: var(--apagado); text-transform: uppercase; letter-spacing: .09em; }
+canvas { width: 186px; height: 279px; border-radius: 8px; border: 1px solid var(--linha); background: #000; }
+ul { margin: 0; padding-left: 1.2em; color: var(--apagado); line-height: 1.65; max-width: 90ch; }
+ul b { color: var(--texto); font-weight: 600; }
+.fontes { font-size: .85rem; }
+.fontes a { color: var(--texto); }
+</style>
+
+<main>
+  <header>
+    <h1>Placar de Mesa: visual novo</h1>
+    <p>Refeito do zero a partir dos contadores de vida mais bem avaliados (Lifetap, Mutility, Carbon) e dos placares de Riftbound
+      (RiftTrack, Riftcount). O que todos têm em comum: <b>cada jogador tem um campo de cor inteiro</b>, sem botões desenhados;
+      tocar na metade esquerda tira, na direita soma; o número fica sozinho e enorme; a variação recente aparece numa etiqueta
+      que some; e o meio da mesa é fino, só com o tempo.</p>
+    <p>Cada prévia é a tela da placa em pé (320×480), com a metade de cima girada para o outro jogador. Exemplo: Riftbound até 8,
+      Magic com 20 de vida, melhor de 3. Fonte parecida com a da placa; na placa as bordas ficam um pouco serrilhadas.</p>
+  </header>
+
+  <section>
+    <h2><span class="letra">D</span> Campo <small>a C levada adiante: a cor ocupa tudo</small></h2>
+    <div class="faixa" data-proposta="D"></div>
+    <ul>
+      <li><b>Dois cartões grandes de cantos bem redondos</b>, separados por um vão preto, com degradê do tom vivo (perto do meio da mesa) para o profundo (perto de você).</li>
+      <li><b>Sem botões</b>: só um − e um + claros nas bordas. A área de toque continua a metade do cartão, como hoje.</li>
+      <li><b>Etiquetas pequenas</b> em cima: nome, série (bolinhas) e, no Magic, −5 e +5. Embaixo: pontos do Riftbound em bolinhas, veneno do Magic.</li>
+      <li><b>Variação recente</b> (−7) numa pílula escura logo acima do número, por 2 segundos.</li>
+      <li><b>Tempo</b> numa pílula fina no meio da mesa, com uma barrinha do que resta. Opções em "•••" no canto.</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2><span class="letra">E</span> Holofote <small>fundo escuro, o número brilha na cor do jogador</small></h2>
+    <div class="faixa" data-proposta="E"></div>
+    <ul>
+      <li><b>Fundo quase preto</b>; atrás do número, um brilho redondo na cor do jogador (círculos concêntricos, do escuro ao vivo).</li>
+      <li><b>Número na cor clara do jogador</b>, como no Carbon e no Mutility: dá para saber de quem é só pela cor.</li>
+      <li><b>Pontos do Riftbound em barrinhas</b> que acendem; no último ponto ficam douradas.</li>
+      <li>Linhas finas e etiquetas discretas; o resultado acende o cartão do vencedor em ouro.</li>
+    </ul>
+  </section>
+
+  <p class="fontes">O que precisa mudar no Pintor (nas duas versões, Arduino_GFX e lv_canvas): <b>degradê vertical</b> (faixas de 2 px) e <b>misturar duas cores</b>
+    (para os tons translúcidos, calculados antes de desenhar). Os círculos do brilho e as pílulas já existem. O meio da mesa passa de 70 para 44 px, e os painéis crescem.</p>
+  <p class="fontes">Referências: <a href="https://apps.apple.com/app/id1508241754">Lifetap</a>, <a href="https://apps.apple.com/app/id741336884">Mutility</a>,
+    <a href="https://draftsim.com/best-mtg-life-counter-app/">Draftsim: melhores contadores</a>, <a href="https://appshunter.io/ios/app/rifttrack-riftbound-companion/id6760731925">RiftTrack</a>,
+    <a href="https://apps.apple.com/app/id6755601459">Riftcount</a>.</p>
+</main>
+
+<script>
+const W = 320, H = 480, MEIO_Y = 218, MEIO_H = 44, PY = MEIO_Y + MEIO_H; // painel de baixo começa em 262
+const rgb = (r, g, b) => `rgb(${r},${g},${b})`;
+const num = (c) => c.match(/\d+/g).map(Number);
+const mistura = (a, b, t) => rgb(...num(a).map((v, k) => Math.round(v + (num(b)[k] - v) * t))); // novo no Pintor
+const BRANCO = rgb(255, 255, 255), PRETO = rgb(0, 0, 0), OURO = rgb(242, 193, 78), VERDE = rgb(110, 210, 90), ALERTA = rgb(255, 92, 92);
+const J = [
+  { nome: "AZUL", vivo: rgb(41, 112, 245), fundo: rgb(10, 26, 74), claro: rgb(132, 186, 255) },
+  { nome: "VERMELHO", vivo: rgb(232, 52, 64), fundo: rgb(70, 8, 20), claro: rgb(255, 140, 140) },
+];
+
+function pintor(ctx) {
+  const p = {
+    ret(x, y, w, h, c) { ctx.fillStyle = c; ctx.fillRect(x, y, w, h); },
+    arred(x, y, w, h, r, c) { ctx.fillStyle = c; ctx.beginPath(); ctx.roundRect(x, y, w, h, r); ctx.fill(); },
+    contorno(x, y, w, h, r, c, g = 1) { ctx.strokeStyle = c; ctx.lineWidth = g; ctx.beginPath(); ctx.roundRect(x + g / 2, y + g / 2, w - g, h - g, r); ctx.stroke(); },
+    circ(x, y, r, c) { ctx.fillStyle = c; ctx.beginPath(); ctx.arc(x, y, r, 0, Math.PI * 2); ctx.fill(); },
+    anel(x, y, r, c, g = 2) { ctx.strokeStyle = c; ctx.lineWidth = g; ctx.beginPath(); ctx.arc(x, y, r - g / 2, 0, Math.PI * 2); ctx.stroke(); },
+    tri(a, b, d, c) { ctx.fillStyle = c; ctx.beginPath(); ctx.moveTo(...a); ctx.lineTo(...b); ctx.lineTo(...d); ctx.fill(); },
+    texto(s, x, yc, tam, c, alinhar = "center", peso = 600) {
+      ctx.font = `${peso} ${Math.round(tam / 0.72)}px Oswald, "Arial Narrow", sans-serif`;
+      ctx.fillStyle = c; ctx.textAlign = alinhar === "esq" ? "left" : alinhar === "dir" ? "right" : "center";
+      ctx.textBaseline = "alphabetic"; ctx.fillText(s, x, yc + tam / 2);
+    },
+    largura(s, tam, peso = 600) { ctx.font = `${peso} ${Math.round(tam / 0.72)}px Oswald, sans-serif`; return ctx.measureText(s).width; },
+    // Degradê vertical em faixas de 2 px, recortado por um retângulo arredondado (na placa: uma faixa por vez, com os cantos calculados).
+    degrade(x, y, w, h, r, c1, c2) {
+      ctx.save(); ctx.beginPath(); ctx.roundRect(x, y, w, h, r); ctx.clip();
+      for (let i = 0; i < h; i += 2) p.ret(x, y + i, w, 2, mistura(c1, c2, i / h));
+      ctx.restore();
+    },
+    sinal(cx, cy, lado, g, mais, c) { p.ret(cx - lado / 2, cy - g / 2, lado, g, c); if (mais) p.ret(cx - g / 2, cy - lado / 2, g, lado, c); },
+    pontinhos(cx, cy, c) { for (let i = -1; i <= 1; i++) p.circ(cx + i * 8, cy, 2.5, c); },
+    metade(j, fn) { ctx.save(); if (j === 1) { ctx.translate(W, H); ctx.rotate(Math.PI); } fn(); ctx.restore(); },
+  };
+  return p;
+}
+
+const DADOS = {
+  rift: { valor: [6, 7], serie: [1, 0], alvo: 8 },
+  magic: { valor: [20, 13], serie: [1, 0], veneno: [0, 2], variacao: [0, -7] },
+};
+
+// ---------------------------------------------------------------- meio da mesa (tempo)
+function meio(p, tipo) {
+  p.ret(0, MEIO_Y, W, MEIO_H, PRETO);
+  for (const j of [0, 1]) p.metade(j, () => {
+    // cada um lê a sua pílula, à esquerda (a da direita é a cópia girada do outro)
+    const x = 10, y = MEIO_Y + 6, w = 142, h = 32;
+    const fundo = tipo === "D" ? rgb(28, 31, 42) : rgb(20, 22, 30);
+    p.arred(x, y, w, h, 16, fundo);
+    if (tipo === "E") p.contorno(x, y, w, h, 16, rgb(48, 52, 66));
+    p.ret(x + 16, y + 9, 4, 14, BRANCO); p.ret(x + 24, y + 9, 4, 14, BRANCO);
+    p.texto("37:12", x + 82, y + 15, 22, BRANCO);
+    const bx = x + 40, bw = 84; // barrinha do tempo que resta
+    p.ret(bx, y + h - 5, bw, 2, rgb(60, 64, 80)); p.ret(bx, y + h - 5, bw * 0.62, 2, tipo === "D" ? BRANCO : OURO);
+  });
+}
+
+// ---------------------------------------------------------------- painel do jogador
+const CX = 6, CW = W - 12, CY = PY + 6, CH = H - PY - 12, CR = 26; // cartão
+const NUM_Y = CY + 104;
+
+function painelD(p, j, jogo) {
+  const c = J[j], d = DADOS[jogo];
+  p.degrade(CX, CY, CW, CH, CR, c.vivo, c.fundo);
+  const suave = mistura(c.vivo, BRANCO, 0.55), apagado = mistura(c.vivo, BRANCO, 0.25);
+  const pilula = mistura(c.fundo, PRETO, 0.35);
+  // − e + nas bordas
+  p.sinal(CX + 30, NUM_Y, 22, 4, false, suave);
+  p.sinal(CX + CW - 30, NUM_Y, 22, 4, true, suave);
+  // número
+  const v = d.valor[j];
+  const ouro = jogo === "rift" && v === d.alvo - 1;
+  p.texto(String(v), W / 2, NUM_Y, 96, ouro ? rgb(255, 222, 130) : BRANCO);
+  // topo: nome e série
+  if (jogo === "magic") {
+    p.arred(CX + 14, CY + 12, 54, 28, 14, pilula); p.texto("−5", CX + 41, CY + 26, 14, BRANCO);
+    p.arred(CX + CW - 68, CY + 12, 54, 28, 14, pilula); p.texto("+5", CX + CW - 41, CY + 26, 14, BRANCO);
+    serie(p, W / 2 - 9, CY + 26, d.serie[j], BRANCO, suave, 6, 18);
+    if (d.variacao[j]) { p.arred(W / 2 - 30, NUM_Y - 76, 60, 26, 13, pilula); p.texto("−7", W / 2, NUM_Y - 63, 15, ALERTA); }
+  } else {
+    p.texto(c.nome, CX + 20, CY + 24, 13, suave, "esq", 500);
+    serie(p, CX + CW - 46, CY + 24, d.serie[j], BRANCO, suave, 6, 18);
+  }
+  // base
+  const by = CY + CH - 30;
+  if (jogo === "rift") {
+    const n = d.alvo, esp = 22, x0 = W / 2 - ((n - 1) * esp) / 2;
+    for (let i = 0; i < n; i++) {
+      const x = x0 + i * esp;
+      if (i < v) p.circ(x, by, 6, ouro ? rgb(255, 222, 130) : BRANCO); else p.anel(x, by, 6, apagado, 2);
+    }
+  } else {
+    const ven = d.veneno[j];
+    p.arred(W / 2 - 74, by - 15, 148, 30, 15, pilula);
+    p.texto("−", W / 2 - 58, by, 16, suave); p.texto("+", W / 2 + 58, by, 16, suave);
+    p.circ(W / 2 - 30, by + 2, 5, ven ? VERDE : suave); p.tri([W / 2 - 35, by + 1], [W / 2 - 25, by + 1], [W / 2 - 30, by - 9], ven ? VERDE : suave);
+    p.texto(`veneno ${ven}`, W / 2 + 8, by, 13, ven ? VERDE : suave);
+  }
+  p.pontinhos(CX + CW - 26, CY + CH - 18, suave);
+}
+
+function painelE(p, j, jogo) {
+  const c = J[j], d = DADOS[jogo];
+  const base = rgb(14, 15, 21);
+  p.arred(CX, CY, CW, CH, CR, base);
+  // brilho: círculos concêntricos do fundo até um tom escuro da cor do jogador
+  for (let k = 0; k < 9; k++) p.circ(W / 2, NUM_Y, 96 - k * 9, mistura(base, c.vivo, 0.05 + k * 0.035));
+  p.contorno(CX, CY, CW, CH, CR, mistura(base, c.vivo, 0.45));
+  const apagado = rgb(110, 114, 130), v = d.valor[j];
+  p.sinal(CX + 28, NUM_Y, 20, 3, false, apagado);
+  p.sinal(CX + CW - 28, NUM_Y, 20, 3, true, apagado);
+  const ouro = jogo === "rift" && v === d.alvo - 1;
+  p.texto(String(v), W / 2, NUM_Y, 96, ouro ? OURO : c.claro);
+  p.texto(c.nome, CX + 20, CY + 24, 13, c.claro, "esq", 500);
+  if (jogo === "magic") {
+    p.contorno(W / 2 - 80, CY + 12, 50, 26, 13, rgb(56, 60, 74)); p.texto("−5", W / 2 - 55, CY + 25, 13, apagado);
+    p.contorno(W / 2 + 30, CY + 12, 50, 26, 13, rgb(56, 60, 74)); p.texto("+5", W / 2 + 55, CY + 25, 13, apagado);
+    if (d.variacao[j]) p.texto("−7", W / 2, NUM_Y - 70, 18, ALERTA);
+  }
+  serie(p, CX + CW - 46, CY + 24, d.serie[j], OURO, rgb(70, 74, 90), 5, 16);
+  const by = CY + CH - 28;
+  if (jogo === "rift") {
+    const n = d.alvo, esp = 4, w = 196, ws = (w - esp * (n - 1)) / n, x0 = W / 2 - w / 2;
+    for (let i = 0; i < n; i++) p.arred(x0 + i * (ws + esp), by - 4, ws, 8, 4, i < v ? (ouro ? OURO : c.claro) : rgb(40, 43, 54));
+  } else {
+    const ven = d.veneno[j];
+    p.texto(`veneno ${ven}`, W / 2, by, 13, ven ? VERDE : apagado);
+    p.texto("−", W / 2 - 60, by, 15, apagado); p.texto("+", W / 2 + 60, by, 15, apagado);
+  }
+  p.pontinhos(CX + CW - 26, CY + CH - 18, apagado);
+}
+function serie(p, x, y, vencidas, cheio, vazio, r, esp) {
+  for (let i = 0; i < 2; i++) { if (i < vencidas) p.circ(x + i * esp, y, r, cheio); else p.anel(x + i * esp, y, r, vazio, 2); }
+}
+
+// ---------------------------------------------------------------- telas
+function telaJogo(p, tipo, jogo) {
+  p.ret(0, 0, W, H, PRETO);
+  for (const j of [0, 1]) p.metade(j, () => (tipo === "D" ? painelD : painelE)(p, j, jogo));
+  meio(p, tipo);
+}
+
+function telaResultado(p, tipo) {
+  p.ret(0, 0, W, H, PRETO);
+  for (const j of [0, 1]) p.metade(j, () => {
+    const venceu = j === 0, c = J[j];
+    if (tipo === "D") p.degrade(CX, CY, CW, CH, CR, venceu ? rgb(246, 196, 70) : rgb(58, 60, 72), venceu ? rgb(120, 70, 10) : rgb(20, 21, 28));
+    else { p.arred(CX, CY, CW, CH, CR, rgb(14, 15, 21)); p.contorno(CX, CY, CW, CH, CR, venceu ? OURO : rgb(50, 54, 66), venceu ? 2 : 1);
+      if (venceu) for (let k = 0; k < 8; k++) p.circ(W / 2, CY + 70, 80 - k * 9, mistura(rgb(14, 15, 21), OURO, 0.04 + k * 0.03)); }
+    const tit = venceu ? "VITÓRIA" : "DERROTA";
+    const corTit = tipo === "D" ? (venceu ? rgb(40, 22, 0) : rgb(160, 164, 178)) : venceu ? OURO : rgb(130, 134, 150);
+    p.texto(tit, W / 2, CY + 62, 46, corTit, "center", 700);
+    const corSub = tipo === "D" ? (venceu ? rgb(70, 40, 0) : rgb(150, 154, 168)) : rgb(170, 174, 188);
+    p.texto(venceu ? "8 a 5 · série 1 a 0" : "5 a 8 · série 0 a 1", W / 2, CY + 104, 15, corSub, "center", 400);
+    // botões
+    const bY = CY + 130, bH = 44;
+    const neutro = tipo === "D" ? (venceu ? rgb(200, 140, 30) : rgb(46, 48, 60)) : rgb(32, 34, 44);
+    p.arred(CX + 14, bY, 96, bH, 22, neutro); p.texto("Desfazer", CX + 62, bY + 22, 15, tipo === "D" && venceu ? rgb(50, 28, 0) : BRANCO);
+    const forte = tipo === "D" ? (venceu ? rgb(40, 22, 0) : BRANCO) : OURO;
+    p.arred(CX + 118, bY, CW - 132, bH, 22, forte);
+    p.texto("Próxima partida", CX + 118 + (CW - 132) / 2, bY + 22, 15, tipo === "D" ? (venceu ? OURO : rgb(20, 22, 30)) : rgb(20, 22, 30));
+    serie(p, W / 2 - 9, CY + CH - 18, venceu ? 1 : 0, tipo === "D" && venceu ? rgb(40, 22, 0) : OURO, rgb(90, 94, 110), 5, 18);
+  });
+  meio(p, tipo);
+}
+
+function telaMenu(p, tipo) {
+  p.ret(0, 0, W, H, PRETO);
+  const jogos = [
+    { nome: "Riftbound", sub: "até 8 pontos · melhor de 3", vivo: rgb(40, 150, 220), fundo: rgb(10, 34, 70), letra: "R" },
+    { nome: "Magic", sub: "20 de vida · melhor de 3", vivo: rgb(230, 120, 40), fundo: rgb(66, 22, 8), letra: "M" },
+  ];
+  for (const j of [0, 1]) p.metade(j, () => {
+    p.texto("ESCOLHA O JOGO", W / 2, PY + 6, 12, rgb(130, 134, 150), "center", 500);
+    jogos.forEach((g, i) => {
+      const x = 12, y = PY + 24 + i * 96, w = W - 24, h = 86;
+      if (tipo === "D") {
+        p.degrade(x, y, w, h, 22, g.vivo, g.fundo);
+        p.texto(g.letra, x + w - 44, y + h / 2 + 4, 76, mistura(g.vivo, g.fundo, 0.45), "center", 700);
+        p.texto(g.nome, x + 22, y + 32, 26, BRANCO, "esq");
+        p.texto(g.sub, x + 22, y + 62, 12, mistura(g.vivo, BRANCO, 0.6), "esq", 400);
+      } else {
+        p.arred(x, y, w, h, 22, rgb(14, 15, 21));
+        for (let k = 0; k < 6; k++) p.circ(x + 46, y + h / 2, 34 - k * 5, mistura(rgb(14, 15, 21), g.vivo, 0.08 + k * 0.12));
+        p.texto(g.letra, x + 46, y + h / 2, 26, BRANCO, "center", 700);
+        p.contorno(x, y, w, h, 22, i === 0 ? OURO : rgb(50, 54, 66), i === 0 ? 2 : 1);
+        p.texto(g.nome, x + 92, y + 32, 24, BRANCO, "esq");
+        p.texto(g.sub, x + 92, y + 60, 12, rgb(140, 144, 160), "esq", 400);
+      }
+    });
+  });
+  p.ret(0, MEIO_Y, W, MEIO_H, PRETO);
+  p.arred(W / 2 - 40, MEIO_Y + 6, 80, 32, 16, rgb(28, 31, 42)); p.texto("Sair", W / 2, MEIO_Y + 22, 15, BRANCO, "center", 500);
+}
+
+function telaOpcoes(p, tipo) {
+  telaJogo(p, tipo, "rift");
+  // Folha que sobe da borda de quem tocou em "•••" (cobre só a metade dele)
+  const x = 6, y = 190, w = W - 12, h = H - y - 6;
+  if (tipo === "D") p.degrade(x, y, w, h, 26, rgb(34, 38, 52), rgb(16, 18, 26));
+  else { p.arred(x, y, w, h, 26, rgb(16, 17, 24)); p.contorno(x, y, w, h, 26, rgb(56, 60, 74)); }
+  p.arred(W / 2 - 22, y + 10, 44, 4, 2, rgb(80, 84, 100));
+  p.texto("Opções", x + 22, y + 38, 22, BRANCO, "esq");
+  p.texto("Fechar", x + w - 22, y + 38, 14, rgb(140, 144, 160), "dir", 400);
+  const itens = [["Zerar pontos", "a série continua"], ["Nova série", "zera pontos, série e tempo"], ["Zerar tempo", ""], ["Voltar ao menu", "o placar atual é perdido"]];
+  itens.forEach(([t, s], i) => {
+    const iy = y + 66 + i * 52;
+    const perigo = i === 3;
+    p.arred(x + 14, iy, w - 28, 46, 14, tipo === "D" ? rgb(42, 46, 62) : rgb(24, 26, 34));
+    p.texto(t, x + 30, iy + (s ? 16 : 23), 16, perigo ? ALERTA : BRANCO, "esq");
+    if (s) p.texto(s, x + 30, iy + 34, 11, rgb(140, 144, 160), "esq", 400);
+    p.tri([x + w - 36, iy + 16], [x + w - 36, iy + 30], [x + w - 28, iy + 23], rgb(120, 124, 140));
+  });
+}
+
+const TELAS = [["Menu", telaMenu], ["Riftbound", (p, t) => telaJogo(p, t, "rift")], ["Magic", (p, t) => telaJogo(p, t, "magic")],
+  ["Resultado", telaResultado], ["Opções", telaOpcoes]];
+
+function desenharTudo() {
+  document.querySelectorAll(".faixa").forEach((faixa) => {
+    faixa.textContent = "";
+    const tipo = faixa.dataset.proposta;
+    for (const [nome, fn] of TELAS) {
+      const fig = document.createElement("figure"), cv = document.createElement("canvas");
+      cv.width = W; cv.height = H; cv.setAttribute("aria-label", `Proposta ${tipo}: tela ${nome}`);
+      const cap = document.createElement("figcaption"); cap.textContent = nome;
+      fig.append(cv, cap); faixa.append(fig);
+      fn(pintor(cv.getContext("2d")), tipo);
+    }
+  });
+}
+desenharTudo();
+if (document.fonts) document.fonts.ready.then(desenharTudo);
+</script>

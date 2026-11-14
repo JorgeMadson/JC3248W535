@@ -29,6 +29,38 @@ void Z_Free(void *ptr) { (void) ptr; }
 long M_FileLength(FILE *f) { (void) f; return 0; }
 void I_Sleep(int ms) { (void) ms; }
 
+// ---- buffer de leitura da placa (RAM interna com DMA, ver DG_BufferLeitura) ----
+//
+// Na placa, ler 512 bytes ou mais do cartão direto num destino na PSRAM obriga o
+// driver a pegar um buffer de DMA na RAM interna; com ela esgotada a leitura falha
+// ("allocate_dma_buf: not enough mem") e não adianta tentar de novo. O buffer da
+// placa é reservado quando o jogo abre e o motor lê por ele.
+#define BUFFER_DMA 1024
+static unsigned char buffer_dma[BUFFER_DMA] __attribute__((aligned(4)));
+static int exigir_dma;  // 1 = o "cartão" só aceita ler no buffer de DMA, alinhado
+
+byte *DG_BufferLeitura(int *tamanho)
+{
+    *tamanho = BUFFER_DMA;
+    return buffer_dma;
+}
+
+static int destino_aceito(const void *buf, size_t n)
+{
+    const unsigned char *b = (const unsigned char *) buf;
+    if (!exigir_dma || n < 512) return 1;
+    return b >= buffer_dma && b + n <= buffer_dma + BUFFER_DMA && (b - buffer_dma) % 4 == 0;
+}
+
+// O fread da placa leva o destino até o driver do cartão (o da glibc no PC usa um
+// buffer próprio), então a regra do DMA fica aqui: -Wl,--wrap=fread no platformio.ini.
+size_t __real_fread(void *ptr, size_t size, size_t n, FILE *f);
+size_t __wrap_fread(void *ptr, size_t size, size_t n, FILE *f)
+{
+    if (!destino_aceito(ptr, size * n)) return 0;  // "allocate_dma_buf: not enough mem"
+    return __real_fread(ptr, size, n, f);
+}
+
 // ---- arquivo falso: 4 KB com bytes conhecidos e falhas programadas ----
 
 #define TAMANHO 4096
@@ -90,6 +122,7 @@ static void abrir(int falhas, off_t falha_em)
 
 void setUp(void)
 {
+    exigir_dma = 0;
     for (int i = 0; i < TAMANHO; i++) conteudo[i] = (unsigned char) (i * 7 + 3);
 }
 
@@ -132,6 +165,35 @@ void test_falha_que_nao_passa_desiste_sem_travar(void)
     TEST_ASSERT_EQUAL(200, lido);  // o motor então mostra o erro, como antes
 }
 
+// Como na placa em 14/11/2026: 1184 de 2792 bytes e depois erro, sempre.
+void test_destino_sem_dma_le_pelo_buffer_da_placa(void)
+{
+    static unsigned char buf[2792];
+    abrir(0, 0);
+    exigir_dma = 1;
+    size_t lido = W_StdC_Read(&wad.wad, 352, buf, sizeof(buf));  // 352: fora do início de um setor
+    TEST_ASSERT_EQUAL(sizeof(buf), lido);
+    TEST_ASSERT_EQUAL_MEMORY(conteudo + 352, buf, sizeof(buf));
+}
+
+void test_buffer_da_placa_ate_o_fim_do_arquivo(void)
+{
+    static unsigned char buf[1500];
+    abrir(0, 0);
+    exigir_dma = 1;
+    TEST_ASSERT_EQUAL(TAMANHO - 3000, W_StdC_Read(&wad.wad, 3000, buf, sizeof(buf)));
+    TEST_ASSERT_EQUAL_MEMORY(conteudo + 3000, buf, TAMANHO - 3000);
+}
+
+void test_buffer_da_placa_com_falha_passageira(void)
+{
+    static unsigned char buf[2792];
+    abrir(1, 1500);
+    exigir_dma = 1;
+    TEST_ASSERT_EQUAL(sizeof(buf), W_StdC_Read(&wad.wad, 700, buf, sizeof(buf)));
+    TEST_ASSERT_EQUAL_MEMORY(conteudo + 700, buf, sizeof(buf));
+}
+
 int main(void)
 {
     UNITY_BEGIN();
@@ -139,5 +201,8 @@ int main(void)
     RUN_TEST(test_leitura_sem_falha_continua_igual);
     RUN_TEST(test_pedir_alem_do_fim_devolve_so_o_que_existe);
     RUN_TEST(test_falha_que_nao_passa_desiste_sem_travar);
+    RUN_TEST(test_destino_sem_dma_le_pelo_buffer_da_placa);
+    RUN_TEST(test_buffer_da_placa_ate_o_fim_do_arquivo);
+    RUN_TEST(test_buffer_da_placa_com_falha_passageira);
     return UNITY_END();
 }
